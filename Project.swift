@@ -8,6 +8,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.bbdyno.app.pillMate",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "CFBundleDevelopmentRegion": "en",
@@ -58,13 +59,22 @@ let project = Project(
                 .target(name: "PillMateWidget"),
                 .external(name: "SDWebImage"),
                 .external(name: "SDWebImageSwiftUI")
-            ]
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "CODE_SIGN_IDENTITY": "iPhone Developer: Taein Kim",
+                    "DEVELOPMENT_TEAM": "4U62JZ6987",
+                    "PROVISIONING_PROFILE_SPECIFIER": "PillMate App Provisioning"
+                ]
+            )
         ),
         .target(
             name: "PillMateWidget",
             destinations: .iOS,
             product: .appExtension,
             bundleId: "com.bbdyno.app.pillMate.widget",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "NSExtension": [
@@ -74,13 +84,22 @@ let project = Project(
             ),
             sources: ["PillMateWidget/**"],
             resources: ["PillMateWidget/**/*.xcassets"],
-            dependencies: []
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "CODE_SIGN_IDENTITY": "iPhone Developer: Taein Kim",
+                    "DEVELOPMENT_TEAM": "4U62JZ6987",
+                    "PROVISIONING_PROFILE_SPECIFIER": "PillMate WidgetExtension Provisioning"
+                ]
+            )
         ),
         .target(
             name: "PillMateTests",
             destinations: .iOS,
             product: .unitTests,
             bundleId: "com.bbdyno.app.pillMate.tests",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .default,
             sources: ["PillMateTests/**"],
             dependencies: [
@@ -92,6 +111,7 @@ let project = Project(
             destinations: .iOS,
             product: .uiTests,
             bundleId: "com.bbdyno.app.pillMate.uitests",
+            deploymentTargets: .iOS("18.0"),
             infoPlist: .default,
             sources: ["PillMateUITests/**"],
             dependencies: [
