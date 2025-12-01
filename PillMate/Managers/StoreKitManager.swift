@@ -58,9 +58,9 @@ enum ProductID: String, CaseIterable {
     var displayName: String {
         switch self {
         case .premium: return "프리미엄 평생 이용권"
-        case .tipSmall: return "커피 한 잔 ☕️"
-        case .tipMedium: return "맛있는 식사 🍽️"
-        case .tipLarge: return "든든한 후원 💪"
+        case .tipSmall: return "커피 한 잔"
+        case .tipMedium: return "맛있는 식사"
+        case .tipLarge: return "든든한 후원"
         }
     }
     
@@ -179,10 +179,10 @@ final class StoreKitManager {
                 return product1.price < product2.price
             }
             
-            print("✅ 제품 로드 완료: \(products.count)개")
+            print("제품 로드 완료: \(products.count)개")
             
         } catch {
-            print("❌ 제품 로드 실패: \(error)")
+            print("제품 로드 실패: \(error)")
             errorMessage = "제품 정보를 불러올 수 없습니다."
         }
     }
@@ -215,16 +215,16 @@ final class StoreKitManager {
                 // 거래 완료 표시 (중요!)
                 await transaction.finish()
                 
-                print("✅ 구매 성공: \(product.displayName)")
+                print("구매 성공: \(product.displayName)")
                 return true
                 
             case .userCancelled:
-                print("ℹ️ 사용자가 구매를 취소했습니다.")
+                print("사용자가 구매를 취소했습니다.")
                 return false
                 
             case .pending:
                 // 부모 승인 대기 등
-                print("ℹ️ 구매 대기 중 (승인 필요)")
+                print("구매 대기 중 (승인 필요)")
                 errorMessage = "구매 승인 대기 중입니다."
                 return false
                 
@@ -233,11 +233,11 @@ final class StoreKitManager {
             }
             
         } catch StoreKit.StoreKitError.userCancelled {
-            print("ℹ️ 사용자가 구매를 취소했습니다.")
+            print("사용자가 구매를 취소했습니다.")
             return false
             
         } catch {
-            print("❌ 구매 실패: \(error)")
+            print("구매 실패: \(error)")
             errorMessage = "구매에 실패했습니다. 다시 시도해주세요."
             return false
         }
@@ -295,15 +295,15 @@ final class StoreKitManager {
             await updatePurchasedProducts()
             
             if isPremium {
-                successMessage = "프리미엄이 복원되었습니다! 🎉"
+                successMessage = "프리미엄이 복원되었습니다!"
             } else {
                 successMessage = "복원할 구매 내역이 없습니다."
             }
             
-            print("✅ 구매 복원 완료")
+            print("구매 복원 완료")
             
         } catch {
-            print("❌ 구매 복원 실패: \(error)")
+            print("구매 복원 실패: \(error)")
             errorMessage = "구매 복원에 실패했습니다."
         }
     }
@@ -322,7 +322,7 @@ final class StoreKitManager {
                     await self.handlePurchase(transaction)
                     await transaction.finish()
                 } catch {
-                    print("❌ 거래 처리 실패: \(error)")
+                    print("거래 처리 실패: \(error)")
                 }
             }
         }
@@ -337,7 +337,7 @@ final class StoreKitManager {
                 self.isPremium = true
                 UserDefaults.standard.set(true, forKey: self.premiumKey)
             }
-            print("✅ 프리미엄 활성화됨")
+            print("프리미엄 활성화됨")
         }
         
         // 기부는 별도 처리 없음 (소모품)
@@ -359,11 +359,11 @@ final class StoreKitManager {
                     }
                 }
             } catch {
-                print("❌ 거래 검증 실패: \(error)")
+                print("거래 검증 실패: \(error)")
             }
         }
         
-        print("ℹ️ 프리미엄 상태: \(isPremium)")
+        print("프리미엄 상태: \(isPremium)")
     }
     
     // MARK: - Verification
@@ -373,11 +373,11 @@ final class StoreKitManager {
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .verified(let safe):
-            // ✅ Apple이 서명 검증 완료
+            // Apple이 서명 검증 완료
             return safe
             
         case .unverified(_, let error):
-            // ❌ 검증 실패 (변조 가능성)
+            // 검증 실패 (변조 가능성)
             throw StoreKitError.failedVerification(error)
         }
     }

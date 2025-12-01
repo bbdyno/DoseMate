@@ -1,0 +1,149 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "D6E9C8A1",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "9900",
+      "familyShareable" : false,
+      "internalID" : "6738461001",
+      "localizations" : [
+        {
+          "description" : "모든 프리미엄 기능을 평생 사용할 수 있습니다.\n• 무제한 약물 등록\n• 상세 통계 & 차트\n• HealthKit 연동\n• 보호자 알림\n• 데이터 내보내기\n• iCloud 백업\n• 고급 알림\n• 모든 위젯",
+          "displayName" : "프리미엄 평생 이용권",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Unlock all premium features forever.\n• Unlimited medications\n• Detailed statistics & charts\n• HealthKit integration\n• Caregiver notifications\n• Data export\n• iCloud backup\n• Advanced notifications\n• All widgets",
+          "displayName" : "Premium Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.pillmate.premium",
+      "referenceName" : "Premium Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2500",
+      "familyShareable" : false,
+      "internalID" : "6738461002",
+      "localizations" : [
+        {
+          "description" : "개발자에게 커피 한 잔을 선물해주세요!\n여러분의 작은 후원이 개발에 큰 힘이 됩니다!",
+          "displayName" : "커피 한 잔",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Buy the developer a coffee!\nYour support means a lot!",
+          "displayName" : "Buy Me a Coffee",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.pillmate.tip.small",
+      "referenceName" : "Tip Small",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "7500",
+      "familyShareable" : false,
+      "internalID" : "6738461003",
+      "localizations" : [
+        {
+          "description" : "개발자에게 맛있는 식사를 대접해주세요!\n여러분의 후원으로 더 나은 앱을 만들 수 있습니다!",
+          "displayName" : "맛있는 식사",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Buy the developer a meal!\nYour support helps create a better app!",
+          "displayName" : "Buy Me a Meal",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.pillmate.tip.medium",
+      "referenceName" : "Tip Medium",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "15000",
+      "familyShareable" : false,
+      "internalID" : "6738461004",
+      "localizations" : [
+        {
+          "description" : "개발자에게 든든한 후원을 보내주세요!\n여러분의 응원이 지속적인 개발의 원동력입니다!",
+          "displayName" : "든든한 후원",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Give strong support!\nYour encouragement drives continuous development!",
+          "displayName" : "Strong Support",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.pillmate.tip.large",
+      "referenceName" : "Tip Large",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6738460000",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "YOUR_TEAM_ID",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 754790400,
+    "_locale" : "ko",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "KOR",
+    "_storeKitErrors" : [
+      {
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

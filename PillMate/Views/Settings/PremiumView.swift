@@ -303,67 +303,119 @@ struct TipJarView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var storeManager = StoreKitManager.shared
     @State private var showThankYou = false
+    @State private var showError = false
+    @State private var selectedProductID: String?
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                // 헤더
-                VStack(spacing: 16) {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 50))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.pink, .red],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+            ScrollView {
+                VStack(spacing: 24) {
+                    // 헤더
+                    VStack(spacing: 16) {
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.pink, .red],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
-                        )
-                    
-                    Text("개발자 응원하기")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("여러분의 작은 후원이\n더 나은 앱을 만드는 데 큰 힘이 됩니다")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                    
-                    if storeManager.totalTipCount > 0 {
-                        Text("총 \(storeManager.totalTipCount)번 응원해주셨어요! 💕")
-                            .font(.caption)
-                            .foregroundColor(.pink)
+                        
+                        Text("개발자 응원하기")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        
+                        Text("여러분의 작은 후원이\n더 나은 앱을 만드는 데 큰 힘이 됩니다")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        
+                        if storeManager.totalTipCount > 0 {
+                            Text("총 \(storeManager.totalTipCount)번 응원해주셨어요! 💕")
+                                .font(.caption)
+                                .foregroundColor(.pink)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 6)
+                                .background(Color.pink.opacity(0.1))
+                                .cornerRadius(12)
+                        }
                     }
-                }
-                .padding(.top)
-                
-                // 기부 옵션들
-                VStack(spacing: 12) {
-                    ForEach(storeManager.tipProducts, id: \.id) { product in
-                        TipButton(product: product) {
-                            Task {
-                                if let productID = ProductID(rawValue: product.id) {
-                                    let success = await storeManager.tip(productID)
-                                    if success {
-                                        showThankYou = true
-                                    }
+                    .padding(.top)
+                    
+                    // 기부 옵션들
+                    if storeManager.tipProducts.isEmpty {
+                        // 제품 로딩 중
+                        VStack(spacing: 12) {
+                            ProgressView()
+                            Text("제품 정보를 불러오는 중...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
+                        .background(Color.appCardBackground)
+                        .cornerRadius(16)
+                    } else {
+                        VStack(spacing: 12) {
+                            ForEach(storeManager.tipProducts, id: \.id) { product in
+                                TipButton(
+                                    product: product,
+                                    isProcessing: storeManager.isPurchasing && selectedProductID == product.id
+                                ) {
+                                    performTipPurchase(product: product)
                                 }
+                                .disabled(storeManager.isPurchasing)
+                            }
+                        }
+                        .padding()
+                        .background(Color.appCardBackground)
+                        .cornerRadius(16)
+                    }
+                    
+                    // 안내 문구
+                    VStack(spacing: 12) {
+                        Text("💡 안내사항")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label {
+                                Text("기부는 추가 기능을 해제하지 않습니다")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } icon: {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(.blue)
+                            }
+                            
+                            Label {
+                                Text("순수하게 개발자를 응원하는 목적입니다")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } icon: {
+                                Image(systemName: "heart.circle.fill")
+                                    .foregroundColor(.pink)
+                            }
+                            
+                            Label {
+                                Text("결제는 Apple ID를 통해 안전하게 처리됩니다")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } icon: {
+                                Image(systemName: "lock.shield.fill")
+                                    .foregroundColor(.green)
                             }
                         }
                     }
+                    .padding()
+                    .background(Color.appCardBackground.opacity(0.5))
+                    .cornerRadius(12)
                 }
                 .padding()
-                .background(Color.appCardBackground)
-                .cornerRadius(16)
-                
-                Spacer()
-                
-                // 안내 문구
-                Text("기부는 추가 기능을 해제하지 않습니다.\n순수하게 개발자를 응원하는 목적입니다.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
             }
-            .padding()
             .navigationTitle("응원하기")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -379,9 +431,45 @@ struct TipJarView: View {
                 }
             }
             .alert("감사합니다! 💕", isPresented: $showThankYou) {
-                Button("확인", role: .cancel) {}
+                Button("확인", role: .cancel) {
+                    selectedProductID = nil
+                }
             } message: {
                 Text("따뜻한 응원에 감사드립니다.\n더 좋은 앱으로 보답하겠습니다!")
+            }
+            .alert("오류", isPresented: $showError) {
+                Button("확인", role: .cancel) {
+                    selectedProductID = nil
+                }
+            } message: {
+                Text(storeManager.errorMessage ?? "알 수 없는 오류가 발생했습니다.")
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// 기부 구매 처리
+    private func performTipPurchase(product: Product) {
+        selectedProductID = product.id
+        
+        Task {
+            guard let productID = ProductID(rawValue: product.id) else {
+                showError = true
+                return
+            }
+            
+            let success = await storeManager.tip(productID)
+            
+            if success {
+                // 구매 성공
+                showThankYou = true
+            } else if storeManager.errorMessage != nil {
+                // 에러가 있는 경우만 에러 표시 (사용자 취소는 표시 안 함)
+                showError = true
+            } else {
+                // 사용자가 취소한 경우
+                selectedProductID = nil
             }
         }
     }
@@ -393,12 +481,16 @@ struct TipJarView: View {
             
             VStack(spacing: 16) {
                 ProgressView()
+                    .scaleEffect(1.2)
+                
                 Text("처리 중...")
+                    .font(.subheadline)
                     .foregroundColor(.white)
             }
             .padding(30)
             .background(Color(.systemBackground))
             .cornerRadius(16)
+            .shadow(radius: 10)
         }
     }
 }
@@ -407,6 +499,7 @@ struct TipJarView: View {
 
 struct TipButton: View {
     let product: Product
+    let isProcessing: Bool
     let action: () -> Void
     
     private var productID: ProductID? {
@@ -415,40 +508,100 @@ struct TipButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
-                Image(systemName: productID?.icon ?? "heart.fill")
-                    .font(.title2)
-                    .foregroundColor(.pink)
-                    .frame(width: 40)
-                
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: 0) {
+                // 상단: 아이콘과 가격
+                HStack(spacing: 12) {
+                    // 아이콘 (그라데이션 배경)
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.pink.opacity(0.2), .pink.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 48, height: 48)
+                        
+                        Image(systemName: productID?.icon ?? "heart.fill")
+                            .font(.title3)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.pink, .red],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+                    
+                    // 제품명
                     Text(productID?.displayName ?? product.displayName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.headline)
+                        .fontWeight(.semibold)
                         .foregroundColor(.primary)
                     
-                    Text(product.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    Spacer()
+                    
+                    // 가격 또는 로딩
+                    if isProcessing {
+                        ProgressView()
+                            .scaleEffect(0.9)
+                    } else {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(product.displayPrice)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.pink, .red],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        }
+                    }
                 }
+                .padding(.bottom, product.description.isEmpty ? 0 : 12)
                 
-                Spacer()
-                
-                Text(product.displayPrice)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.pink)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.pink.opacity(0.15))
-                    .cornerRadius(8)
+                // 하단: 설명 (여러 줄)
+                if !product.description.isEmpty {
+                    Text(product.description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            .cornerRadius(12)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                isProcessing 
+                                    ? LinearGradient(
+                                        colors: [.pink, .red],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                    : LinearGradient(
+                                        colors: [.clear],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ),
+                                lineWidth: isProcessing ? 2 : 0
+                            )
+                    )
+            )
+            .scaleEffect(isProcessing ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isProcessing)
         }
         .buttonStyle(.plain)
+        .disabled(isProcessing)
     }
 }
 
