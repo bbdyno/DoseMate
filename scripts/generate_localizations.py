@@ -21,11 +21,12 @@ import re
 import argparse
 import traceback
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 try:
     import gspread
+    import google.auth
     from google.oauth2.service_account import Credentials
 except ImportError:
     print("Error: Required packages not installed.")
@@ -37,7 +38,6 @@ except ImportError:
 SCRIPT_DIR = Path(__file__).parent.absolute()
 PROJECT_ROOT = SCRIPT_DIR.parent
 LOCALIZATIONS_DIR = PROJECT_ROOT / "DoseMate" / "Resources" / "Localizations"
-CREDENTIALS_FILE = SCRIPT_DIR / "google-sheet-api.json"
 
 # Google Sheets API Scopes
 SCOPES = [
@@ -58,64 +58,64 @@ LANGUAGE_MAPPING = {
 def extract_sheet_id(input_str: str) -> str:
     """
     Extract Google Sheets ID from URL or return as-is if already an ID
-
-    Args:
-        input_str: Google Sheets URL or ID
-
-    Returns:
-        Sheet ID
     """
-    # Check if it's a URL
     url_pattern = r'/spreadsheets/d/([a-zA-Z0-9-_]+)'
     match = re.search(url_pattern, input_str)
 
     if match:
         return match.group(1)
-
-    # Assume it's already an ID
     return input_str
 
 
 class LocalizationGenerator:
     """Generates iOS Localizable.strings files from Google Sheets"""
 
-    def __init__(self, credentials_path: Path, sheet_id: str, worksheet_name: Optional[str] = None):
+    def __init__(self, sheet_id: str, credentials_path: Optional[Path] = None, worksheet_name: Optional[str] = None):
         """
         Initialize the generator
 
         Args:
-            credentials_path: Path to Google service account JSON file
             sheet_id: Google Sheets document ID
+            credentials_path: Path to service account JSON (Optional if using WIF/Env Vars)
             worksheet_name: Name of the worksheet (default: first sheet)
         """
-        self.credentials_path = credentials_path
         self.sheet_id = sheet_id
+        self.credentials_path = credentials_path
         self.worksheet_name = worksheet_name
         self.client = None
 
     def authenticate(self) -> None:
-        """Authenticate with Google Sheets API"""
+        """Authenticate with Google Sheets API using WIF or Service Account"""
         try:
-            credentials = Credentials.from_service_account_file(
-                str(self.credentials_path),
-                scopes=SCOPES
-            )
+            credentials = None
+            
+            # 1. Explicit Service Account File (Legacy/Direct Path)
+            if self.credentials_path and self.credentials_path.exists():
+                print(f"Auth: Using provided service account file: {self.credentials_path.name}")
+                credentials = Credentials.from_service_account_file(
+                    str(self.credentials_path),
+                    scopes=SCOPES
+                )
+            
+            # 2. Workload Identity Federation / Standard Environment Variable
+            else:
+                print("Auth: Attempting to use Default Credentials (WIF/Env Vars)...")
+                # google.auth.default() checks GOOGLE_APPLICATION_CREDENTIALS automatically
+                credentials, project = google.auth.default(scopes=SCOPES)
+            
+            # Authorize gspread
             self.client = gspread.authorize(credentials)
             print(f"✓ Successfully authenticated with Google Sheets API")
-        except FileNotFoundError:
-            print(f"Error: Credentials file not found: {self.credentials_path}")
-            sys.exit(1)
+
         except Exception as e:
             print(f"Error: Authentication failed: {e}")
+            print("\nTroubleshooting for Workload Identity Federation:")
+            print("1. Ensure 'GOOGLE_APPLICATION_CREDENTIALS' env var points to your configuration JSON.")
+            print("2. Ensure the underlying service account has access to the Spreadsheet.")
             sys.exit(1)
 
     def fetch_data(self) -> List[List[str]]:
-        """
-        Fetch all data from the Google Sheet
-
-        Returns:
-            2D list of sheet data
-        """
+        """Fetch all data from the Google Sheet"""
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
 
@@ -130,30 +130,10 @@ class LocalizationGenerator:
 
         except Exception as e:
             print(f"Error: Failed to fetch data: {e}")
-            print(f"\nDetailed error:")
-            traceback.print_exc()
-
-            # Provide helpful hints
-            print("\nPossible causes:")
-            print("1. The worksheet name 'ios' might not exist in the spreadsheet")
-            print("2. The service account might not have access to the spreadsheet")
-            print("3. Check if you've shared the spreadsheet with the service account email")
             sys.exit(1)
 
     def parse_data(self, raw_data: List[List[str]]) -> Dict[str, Dict[str, str]]:
-        """
-        Parse raw sheet data into structured format
-
-        Expected format:
-        Row 1: [Key, en, ko, ja, zh-Hans, id, ...]
-        Row 2+: [key_name, "English", "한국어", "日本語", "中文", "Bahasa", ...]
-
-        Args:
-            raw_data: Raw 2D list from Google Sheets
-
-        Returns:
-            Dictionary mapping language codes to key-value pairs
-        """
+        """Parse raw sheet data into structured format"""
         if not raw_data or len(raw_data) < 2:
             print("Error: Sheet is empty or has insufficient data")
             sys.exit(1)
@@ -163,173 +143,117 @@ class LocalizationGenerator:
             print("Error: Sheet must have at least 2 columns (Key + at least 1 language)")
             sys.exit(1)
 
-        # First column is the key, rest are language codes
         language_codes = [h.strip() for h in headers[1:] if h.strip()]
-
-        # Initialize result dictionary
         result: Dict[str, Dict[str, str]] = {lang: {} for lang in language_codes}
 
-        # Process each row
-        for row_idx, row in enumerate(raw_data[1:], start=2):
+        for row in raw_data[1:]:
             if not row or not row[0].strip():
-                continue  # Skip empty rows
+                continue
 
             key = row[0].strip()
-
-            # Process each language column
             for lang_idx, lang_code in enumerate(language_codes, start=1):
                 if lang_idx < len(row):
                     value = row[lang_idx].strip()
-                    if value:  # Only add non-empty values
+                    if value:
                         result[lang_code][key] = value
 
-        print(f"✓ Parsed data for {len(language_codes)} languages:")
-        for lang in language_codes:
-            print(f"  - {lang}: {len(result[lang])} keys")
-
+        print(f"✓ Parsed data for {len(language_codes)} languages")
         return result
 
     def generate_strings_file(self, data: Dict[str, str], output_path: Path) -> None:
-        """
-        Generate an iOS Localizable.strings file
-
-        Args:
-            data: Dictionary of key-value pairs
-            output_path: Output file path
-        """
-        # Create parent directory if it doesn't exist
+        """Generate an iOS Localizable.strings file"""
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Backup logic removed to keep directories clean.
+        # It will simply overwrite the existing file.
 
-        # Backup existing file if it exists
-        if output_path.exists():
-            backup_path = output_path.with_suffix('.strings.backup')
-            import shutil
-            shutil.copy2(output_path, backup_path)
-            print(f"  → Backed up existing file to {backup_path.name}")
+        lines = [
+            f"/* Generated from Google Sheets */",
+            ""
+        ]
 
-        # Generate content
-        lines = []
-        lines.append(f"/* Generated from Google Sheets */")
-        lines.append(f"/* Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} */")
-        lines.append(f"/* Total keys: {len(data)} */")
-        lines.append("")
-
-        # Sort keys for consistent output
+        # Sort keys strictly to minimize git diff noise
         for key in sorted(data.keys()):
-            value = data[key]
-            # Escape quotes in value
-            escaped_value = value.replace('"', '\\"').replace('\n', '\\n')
-            lines.append(f'"{key}" = "{escaped_value}";')
+            val = data[key]
+            # Escape double quotes and newlines for .strings format
+            val_escaped = val.replace('"', '\\"').replace('\n', '\\n')
+            lines.append(f'"{key}" = "{val_escaped}";')
 
-        # Write to file
-        content = '\n'.join(lines) + '\n'
-        output_path.write_text(content, encoding='utf-8')
-
-        print(f"✓ Generated: {output_path.relative_to(PROJECT_ROOT)}")
-
-    def generate_all(self, localization_data: Dict[str, Dict[str, str]]) -> None:
-        """
-        Generate all Localizable.strings files
-
-        Args:
-            localization_data: Dictionary mapping language codes to key-value pairs
-        """
-        print(f"\nGenerating Localizable.strings files...")
-
-        for lang_code, data in localization_data.items():
-            # Determine the .lproj folder name
-            lproj_folder = LANGUAGE_MAPPING.get(lang_code, f"{lang_code}.lproj")
-
-            # Construct output path
-            output_path = LOCALIZATIONS_DIR / lproj_folder / "Localizable.strings"
-
-            # Generate the file
-            self.generate_strings_file(data, output_path)
-
-        print(f"\n✓ Successfully generated {len(localization_data)} localization files")
-
-    def run(self) -> None:
-        """Run the complete localization generation process"""
-        print("=" * 60)
-        print("iOS Localizations Generator")
-        print("=" * 60)
-        print()
-
-        # Step 1: Authenticate
-        print("Step 1: Authenticating with Google Sheets...")
-        self.authenticate()
-        print()
-
-        # Step 2: Fetch data
-        print("Step 2: Fetching data from Google Sheets...")
-        raw_data = self.fetch_data()
-        print()
-
-        # Step 3: Parse data
-        print("Step 3: Parsing localization data...")
-        localization_data = self.parse_data(raw_data)
-        print()
-
-        # Step 4: Generate files
-        print("Step 4: Generating Localizable.strings files...")
-        self.generate_all(localization_data)
-        print()
-
-        print("=" * 60)
-        print("✓ All done!")
-        print("=" * 60)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(lines))
+        
+        print(f"✓ Created: {output_path.name}")
 
 
-def main():
-    """Main entry point"""
-    parser = argparse.ArgumentParser(
-        description='Generate iOS Localizable.strings files from Google Sheets',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Example:
-  %(prog)s --sheet-id 1ABC123...xyz --worksheet "Localizations"
-  %(prog)s -s 1ABC123...xyz -w "Sheet1"
-        """
-    )
+def resolve_credentials_path(config: Dict[str, Any]) -> Optional[Path]:
+    """
+    Resolve the path to the credentials JSON file based on config priority:
+    1. credentials_primary
+    2. credentials_secondary
+    """
+    priority_keys = ['credentials_primary', 'credentials_secondary']
+    
+    for key in priority_keys:
+        filename = config.get(key)
+        if filename:
+            candidate_path = SCRIPT_DIR / filename
+            if candidate_path.exists():
+                print(f"Config: Found credentials file ({key}): '{filename}'")
+                return candidate_path
+            else:
+                print(f"Config: File defined in '{key}' ('{filename}') not found. Skipping...")
 
-    parser.add_argument(
-        '-s', '--sheet-id',
-        required=True,
-        help='Google Sheets document ID or full URL'
-    )
+    return None
 
-    parser.add_argument(
-        '-w', '--worksheet',
-        help='Worksheet name (default: first sheet)'
-    )
 
-    parser.add_argument(
-        '-c', '--credentials',
-        default=str(CREDENTIALS_FILE),
-        help=f'Path to Google service account credentials JSON (default: {CREDENTIALS_FILE})'
-    )
-
-    args = parser.parse_args()
-
-    # Validate credentials file
-    credentials_path = Path(args.credentials)
-    if not credentials_path.exists():
-        print(f"Error: Credentials file not found: {credentials_path}")
-        print(f"\nPlease ensure '{credentials_path.name}' is in the scripts directory")
+if __name__ == "__main__":
+    # 1. Load Configuration
+    config_path = SCRIPT_DIR / "config.json"
+    config = {}
+    
+    if config_path.exists():
+        try:
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load config.json: {e}")
+    
+    # 2. Determine Sheet ID
+    sheet_id = config.get('sheet_id')
+    if not sheet_id:
+        print("Error: 'sheet_id' not found in config.json")
         sys.exit(1)
+        
+    sheet_id = extract_sheet_id(sheet_id)
+    worksheet_name = config.get('worksheet_name')
 
-    # Extract sheet ID from URL if needed
-    sheet_id = extract_sheet_id(args.sheet_id)
+    # 3. Resolve Credentials
+    creds_path = resolve_credentials_path(config)
 
-    # Create and run generator
+    # 4. Run Generator
     generator = LocalizationGenerator(
-        credentials_path=credentials_path,
         sheet_id=sheet_id,
-        worksheet_name=args.worksheet
+        credentials_path=creds_path,
+        worksheet_name=worksheet_name
     )
+    
+    generator.authenticate()
+    raw_data = generator.fetch_data()
+    parsed_data = generator.parse_data(raw_data)
 
-    generator.run()
+    # 5. Export Files
+    print(f"\nTarget Directory: {LOCALIZATIONS_DIR}")
+    
+    for lang_code, translations in parsed_data.items():
+        if not translations:
+            continue
+            
+        mapped_folder = LANGUAGE_MAPPING.get(lang_code)
+        if not mapped_folder:
+            print(f"Skipping unknown language code: {lang_code}")
+            continue
+            
+        output_file = LOCALIZATIONS_DIR / mapped_folder / "Localizable.strings"
+        generator.generate_strings_file(translations, output_file)
 
-
-if __name__ == '__main__':
-    main()
+    print("\n✓ Localization update completed successfully.")

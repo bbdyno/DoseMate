@@ -51,3 +51,4 @@ iOSInjectionProject/
 
 # Google Sheets API credentials
 scripts/google-sheet-api.json
+scripts/google-sheet-api-sub.json
