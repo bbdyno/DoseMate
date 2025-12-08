@@ -1,6 +1,6 @@
 /* Generated from Google Sheets */
-/* Generated at: 2025-12-06 22:57:52 */
-/* Total keys: 364 */
+/* Generated at: 2025-12-08 22:54:41 */
+/* Total keys: 373 */
 
 "alert.continue" = "Lanjutkan";
 "alert.delete_all_message" = "All medications";
@@ -58,15 +58,20 @@
 "errors.delete_medication_failed" = "Gagal menghapus obat.";
 "errors.load_medications_failed" = "Gagal memuat daftar obat.";
 "health.add_record" = "Tambah catatan";
+"health.all_data_storage" = "Simpan semua catatan data kesehatan";
 "health.cancel" = "Batal";
+"health.chart_date" = "Tanggal";
+"health.chart_value" = "Nilai";
 "health.confirm" = "Konfirmasi";
 "health.date" = "Tanggal";
 "health.diastolic_bp" = "Tekanan darah diastolik";
+"health.diastolic_unit" = "mmHg (Diastolik)";
 "health.error" = "Kesalahan";
 "health.input_title" = "Masukan metrik kesehatan";
 "health.input_value" = "Masukkan nilai";
 "health.last_sync" = "Terakhir: %@";
 "health.metrics_title" = "Metrik kesehatan";
+"health.metrics_tracking" = "Lacak dan analisis metrik kesehatan";
 "health.no_record" = "Tidak ada catatan";
 "health.no_records" = "Tidak ada catatan";
 "health.notes_optional" = "Catatan (opsional)";
@@ -75,12 +80,16 @@
 "health.premium_description" = "Upgrade untuk sinkronkan data kesehatan";
 "health.premium_feature" = "Khusus Premium • Integrasi Kesehatan";
 "health.recent_records" = "Catatan terbaru";
+"health.record_management" = "Manajemen Catatan";
 "health.save" = "Simpan";
 "health.select_metric" = "Pilih metrik";
+"health.sync_auto" = "Sinkronisasi otomatis dengan Kesehatan";
 "health.sync_description" = "Sinkron untuk mengambil data kesehatan";
 "health.sync_from_health" = "Sinkron dari Kesehatan";
 "health.systolic_bp" = "Tekanan darah sistolik";
+"health.systolic_unit" = "mmHg (Sistolik)";
 "health.title" = "Metrik Kesehatan";
+"health.upgrade_premium" = "Upgrade ke Premium";
 "health.value" = "Nilai";
 "home.completed" = "Selesai";
 "home.greeting_afternoon" = "Selamat siang 🌤";

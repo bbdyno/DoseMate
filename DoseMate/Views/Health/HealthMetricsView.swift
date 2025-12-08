@@ -145,19 +145,19 @@ struct HealthMetricsView: View {
                 FeatureRow(
                     icon: "heart.text.square.fill",
                     title: DoseMateStrings.Health.syncFromHealth,
-                    description: "건강 앱과 자동 동기화"
+                    description: DoseMateStrings.Health.syncAuto
                 )
 
                 FeatureRow(
                     icon: "chart.line.uptrend.xyaxis",
                     title: DoseMateStrings.Health.metricsTitle,
-                    description: "건강 지표 추적 및 분석"
+                    description: DoseMateStrings.Health.metricsTracking
                 )
 
                 FeatureRow(
                     icon: "calendar",
-                    title: "기록 관리",
-                    description: "모든 건강 데이터 기록 보관"
+                    title: DoseMateStrings.Health.recordManagement,
+                    description: DoseMateStrings.Health.allDataStorage
                 )
             }
             .padding(AppSpacing.lg)
@@ -174,7 +174,7 @@ struct HealthMetricsView: View {
             } label: {
                 HStack(spacing: AppSpacing.sm) {
                     Image(systemName: "crown.fill")
-                    Text("프리미엄으로 업그레이드")
+                    Text(DoseMateStrings.Health.upgradePremium)
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
@@ -375,15 +375,15 @@ struct HealthMetricsView: View {
             if !history.isEmpty {
                 Chart(history) { metric in
                     LineMark(
-                        x: .value("날짜", metric.recordedAt),
-                        y: .value("값", metric.value)
+                        x: .value(DoseMateStrings.Health.chartDate, metric.recordedAt),
+                        y: .value(DoseMateStrings.Health.chartValue, metric.value)
                     )
                     .foregroundStyle(type.color.gradient)
                     .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    
+
                     AreaMark(
-                        x: .value("날짜", metric.recordedAt),
-                        y: .value("값", metric.value)
+                        x: .value(DoseMateStrings.Health.chartDate, metric.recordedAt),
+                        y: .value(DoseMateStrings.Health.chartValue, metric.value)
                     )
                     .foregroundStyle(
                         LinearGradient(
@@ -392,10 +392,10 @@ struct HealthMetricsView: View {
                             endPoint: .bottom
                         )
                     )
-                    
+
                     PointMark(
-                        x: .value("날짜", metric.recordedAt),
-                        y: .value("값", metric.value)
+                        x: .value(DoseMateStrings.Health.chartDate, metric.recordedAt),
+                        y: .value(DoseMateStrings.Health.chartValue, metric.value)
                     )
                     .foregroundStyle(type.color)
                     .symbolSize(40)
@@ -524,7 +524,7 @@ struct HealthMetricsView: View {
                                     .background(AppColors.background)
                                     .cornerRadius(AppRadius.md)
                                 
-                                Text("mmHg (수축기)")
+                                Text(DoseMateStrings.Health.systolicUnit)
                                     .font(AppTypography.caption)
                                     .foregroundColor(AppColors.textSecondary)
 
@@ -536,7 +536,7 @@ struct HealthMetricsView: View {
                                     .background(AppColors.background)
                                     .cornerRadius(AppRadius.md)
                                 
-                                Text("mmHg (이완기)")
+                                Text(DoseMateStrings.Health.diastolicUnit)
                                     .font(AppTypography.caption)
                                     .foregroundColor(AppColors.textSecondary)
                             } else if type == .mood {

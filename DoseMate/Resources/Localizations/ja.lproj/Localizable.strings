@@ -1,6 +1,6 @@
 /* Generated from Google Sheets */
-/* Generated at: 2025-12-06 22:57:52 */
-/* Total keys: 364 */
+/* Generated at: 2025-12-08 22:54:41 */
+/* Total keys: 373 */
 
 "alert.continue" = "続行";
 "alert.delete_all_message" = "건강 지표가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.";
@@ -58,15 +58,20 @@
 "errors.delete_medication_failed" = "お薬の削除に失敗しました。";
 "errors.load_medications_failed" = "お薬一覧の読み込みに失敗しました。";
 "health.add_record" = "記録を追加";
+"health.all_data_storage" = "すべての健康データを記録・保存";
 "health.cancel" = "キャンセル";
+"health.chart_date" = "日付";
+"health.chart_value" = "値";
 "health.confirm" = "確認";
 "health.date" = "日付";
 "health.diastolic_bp" = "拡張期血圧";
+"health.diastolic_unit" = "mmHg (拡張期)";
 "health.error" = "エラー";
 "health.input_title" = "健康指標の入力";
 "health.input_value" = "値を入力";
 "health.last_sync" = "最終: %@";
 "health.metrics_title" = "健康指標";
+"health.metrics_tracking" = "健康指標の追跡と分析";
 "health.no_record" = "記録なし";
 "health.no_records" = "記録がありません";
 "health.notes_optional" = "メモ（任意）";
@@ -75,12 +80,16 @@
 "health.premium_description" = "アップグレードして健康データを同期しましょう";
 "health.premium_feature" = "プレミアム限定 • ヘルスケア連携";
 "health.recent_records" = "最近の記録";
+"health.record_management" = "記録管理";
 "health.save" = "保存";
 "health.select_metric" = "測定項目を選択";
+"health.sync_auto" = "ヘルスケアと自動同期";
 "health.sync_description" = "同期して健康データを取得しましょう";
 "health.sync_from_health" = "ヘルスケアから同期";
 "health.systolic_bp" = "収縮期血圧";
+"health.systolic_unit" = "mmHg (収縮期)";
 "health.title" = "健康指標";
+"health.upgrade_premium" = "プレミアムにアップグレード";
 "health.value" = "値";
 "home.completed" = "完了";
 "home.greeting_afternoon" = "こんにちは 🌤";

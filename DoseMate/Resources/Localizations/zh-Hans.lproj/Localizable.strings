@@ -1,6 +1,6 @@
 /* Generated from Google Sheets */
-/* Generated at: 2025-12-06 22:57:52 */
-/* Total keys: 364 */
+/* Generated at: 2025-12-08 22:54:41 */
+/* Total keys: 373 */
 
 "alert.continue" = "继续";
 "alert.delete_all_message" = "logs";
@@ -58,15 +58,20 @@
 "errors.delete_medication_failed" = "删除药物失败。";
 "errors.load_medications_failed" = "无法加载药物列表。";
 "health.add_record" = "添加记录";
+"health.all_data_storage" = "存储所有健康数据记录";
 "health.cancel" = "取消";
+"health.chart_date" = "日期";
+"health.chart_value" = "数值";
 "health.confirm" = "确认";
 "health.date" = "日期";
 "health.diastolic_bp" = "舒张压";
+"health.diastolic_unit" = "mmHg (舒张压)";
 "health.error" = "错误";
 "health.input_title" = "输入健康指标";
 "health.input_value" = "输入数值";
 "health.last_sync" = "上次：%@";
 "health.metrics_title" = "健康指标";
+"health.metrics_tracking" = "跟踪和分析健康指标";
 "health.no_record" = "无记录";
 "health.no_records" = "没有记录";
 "health.notes_optional" = "备注（可选）";
@@ -75,12 +80,16 @@
 "health.premium_description" = "升级以同步健康数据";
 "health.premium_feature" = "高级版专属 • 健康App集成";
 "health.recent_records" = "最近记录";
+"health.record_management" = "记录管理";
 "health.save" = "保存";
 "health.select_metric" = "选择指标";
+"health.sync_auto" = "与健康App自动同步";
 "health.sync_description" = "同步以获取健康数据";
 "health.sync_from_health" = "从健康App同步";
 "health.systolic_bp" = "收缩压";
+"health.systolic_unit" = "mmHg (收缩压)";
 "health.title" = "健康指标";
+"health.upgrade_premium" = "升级至高级版";
 "health.value" = "数值";
 "home.completed" = "已完成";
 "home.greeting_afternoon" = "下午好 🌤";

@@ -1,6 +1,6 @@
 /* Generated from Google Sheets */
-/* Generated at: 2025-12-06 22:57:52 */
-/* Total keys: 364 */
+/* Generated at: 2025-12-08 22:54:41 */
+/* Total keys: 373 */
 
 "alert.continue" = "계속";
 "alert.delete_all_message" = "모든 약물";
@@ -58,15 +58,20 @@
 "errors.delete_medication_failed" = "약물 삭제에 실패했습니다.";
 "errors.load_medications_failed" = "약물 목록을 불러오는데 실패했습니다.";
 "health.add_record" = "기록 추가";
+"health.all_data_storage" = "모든 건강 데이터 기록 보관";
 "health.cancel" = "취소";
+"health.chart_date" = "날짜";
+"health.chart_value" = "값";
 "health.confirm" = "확인";
 "health.date" = "날짜";
 "health.diastolic_bp" = "이완기 혈압";
+"health.diastolic_unit" = "mmHg (이완기)";
 "health.error" = "오류";
 "health.input_title" = "건강 지표 입력";
 "health.input_value" = "값 입력";
 "health.last_sync" = "마지막: %@";
 "health.metrics_title" = "건강 지표";
+"health.metrics_tracking" = "건강 지표 추적 및 분석";
 "health.no_record" = "기록 없음";
 "health.no_records" = "기록이 없습니다";
 "health.notes_optional" = "메모 (선택)";
@@ -75,12 +80,16 @@
 "health.premium_description" = "업그레이드하고 건강 데이터를 동기화하세요";
 "health.premium_feature" = "프리미엄 전용 • 건강 앱 연동";
 "health.recent_records" = "최근 기록";
+"health.record_management" = "기록 관리";
 "health.save" = "저장";
 "health.select_metric" = "측정 항목 선택";
+"health.sync_auto" = "건강 앱과 자동 동기화";
 "health.sync_description" = "동기화하여 건강 데이터를 가져오세요";
 "health.sync_from_health" = "건강 앱에서 동기화";
 "health.systolic_bp" = "수축기 혈압";
+"health.systolic_unit" = "mmHg (수축기)";
 "health.title" = "건강 지표";
+"health.upgrade_premium" = "프리미엄으로 업그레이드";
 "health.value" = "값";
 "home.completed" = "완료";
 "home.greeting_afternoon" = "좋은 오후에요 🌤";

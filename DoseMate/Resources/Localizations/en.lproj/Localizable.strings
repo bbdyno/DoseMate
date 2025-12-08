@@ -1,6 +1,6 @@
 /* Generated from Google Sheets */
-/* Generated at: 2025-12-06 22:57:52 */
-/* Total keys: 364 */
+/* Generated at: 2025-12-08 22:54:41 */
+/* Total keys: 373 */
 
 "alert.continue" = "Continue";
 "alert.delete_all_message" = "복약 기록";
@@ -58,15 +58,20 @@
 "errors.delete_medication_failed" = "Failed to delete medication.";
 "errors.load_medications_failed" = "Failed to load medications.";
 "health.add_record" = "Add Record";
+"health.all_data_storage" = "Store all health data records";
 "health.cancel" = "Cancel";
+"health.chart_date" = "Date";
+"health.chart_value" = "Value";
 "health.confirm" = "OK";
 "health.date" = "Date";
 "health.diastolic_bp" = "Diastolic Blood Pressure";
+"health.diastolic_unit" = "mmHg (Diastolic)";
 "health.error" = "Error";
 "health.input_title" = "Input Health Metric";
 "health.input_value" = "Enter Value";
 "health.last_sync" = "Last: %@";
 "health.metrics_title" = "Health Metrics";
+"health.metrics_tracking" = "Track and analyze health metrics";
 "health.no_record" = "No Record";
 "health.no_records" = "No records available";
 "health.notes_optional" = "Notes (Optional)";
@@ -75,12 +80,16 @@
 "health.premium_description" = "Upgrade to sync health data";
 "health.premium_feature" = "Premium Only • Health App Integration";
 "health.recent_records" = "Recent Records";
+"health.record_management" = "Record Management";
 "health.save" = "Save";
 "health.select_metric" = "Select Metric";
+"health.sync_auto" = "Auto Sync with Health App";
 "health.sync_description" = "Sync to fetch health data";
 "health.sync_from_health" = "Sync from Health App";
 "health.systolic_bp" = "Systolic Blood Pressure";
+"health.systolic_unit" = "mmHg (Systolic)";
 "health.title" = "Health Metrics";
+"health.upgrade_premium" = "Upgrade to Premium";
 "health.value" = "Value";
 "home.completed" = "Completed";
 "home.greeting_afternoon" = "Good afternoon 🌤";
