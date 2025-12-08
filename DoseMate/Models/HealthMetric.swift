@@ -47,7 +47,12 @@ final class HealthMetric {
     
     /// HealthKit 샘플 UUID (중복 방지용)
     var healthKitUUID: String?
-    
+
+    // MARK: - 관계
+
+    /// 연관된 약물 (이 지표가 특정 약물과 관련있는 경우)
+    var medication: Medication?
+
     // MARK: - 계산 속성
     
     /// 지표 타입 열거형

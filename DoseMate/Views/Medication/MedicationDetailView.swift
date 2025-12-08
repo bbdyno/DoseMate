@@ -42,7 +42,12 @@ struct MedicationDetailView: View {
                 
                 // 스케줄
                 schedulesSection
-                
+
+                // 관련 건강 지표
+                if !medication.relatedMetricTypes.isEmpty && PremiumFeatures.canUseHealthKit {
+                    relatedHealthMetricsSection
+                }
+
                 // 복약 기록
                 logsSection
                 
@@ -51,7 +56,7 @@ struct MedicationDetailView: View {
             }
             .padding()
         }
-        .background(Color.appBackground)
+        .background(AppColors.background)
         .navigationTitle(medication.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -86,6 +91,7 @@ struct MedicationDetailView: View {
                 }
             }
         }
+        .toolbarBackground(.clear, for: .navigationBar)
         .onAppear {
             viewModel.setup(with: modelContext)
         }
@@ -131,8 +137,8 @@ struct MedicationDetailView: View {
                     .frame(width: 100, height: 100)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             } else {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.gray.opacity(0.2))
+                RoundedRectangle(cornerRadius: AppRadius.lg)
+                    .fill(AppColors.divider.opacity(0.5))
                     .frame(width: 100, height: 100)
                     .overlay {
                         Image(systemName: medication.medicationForm.icon)
@@ -159,11 +165,12 @@ struct MedicationDetailView: View {
                 
                 if !medication.isActive {
                     Text("복용 중단됨")
-                        .font(.caption)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(8)
+                        .font(AppTypography.caption)
+                        .foregroundColor(AppColors.textSecondary)
+                        .padding(.horizontal, AppSpacing.md)
+                        .padding(.vertical, AppSpacing.xs)
+                        .background(AppColors.divider.opacity(0.3))
+                        .cornerRadius(AppRadius.sm)
                 }
             }
             
@@ -189,9 +196,9 @@ struct MedicationDetailView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.appCardBackground)
-        .cornerRadius(16)
+        .padding(AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .cornerRadius(AppRadius.lg)
     }
     
     private var stockColor: Color {
@@ -242,9 +249,9 @@ struct MedicationDetailView: View {
                 )
             }
         }
-        .padding()
-        .background(Color.appCardBackground)
-        .cornerRadius(16)
+        .padding(AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .cornerRadius(AppRadius.lg)
     }
     
     private func statisticCard(title: String, value: String, color: Color) -> some View {
@@ -305,9 +312,9 @@ struct MedicationDetailView: View {
                 }
             }
         }
-        .padding()
-        .background(Color.appCardBackground)
-        .cornerRadius(16)
+        .padding(AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .cornerRadius(AppRadius.lg)
     }
     
     // MARK: - Logs Section
@@ -340,9 +347,9 @@ struct MedicationDetailView: View {
                 }
             }
         }
-        .padding()
-        .background(Color.appCardBackground)
-        .cornerRadius(16)
+        .padding(AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .cornerRadius(AppRadius.lg)
     }
     
     // MARK: - Details Section
@@ -370,9 +377,9 @@ struct MedicationDetailView: View {
             
             detailRow(title: "등록일", value: Formatters.fullDate.string(from: medication.createdAt))
         }
-        .padding()
-        .background(Color.appCardBackground)
-        .cornerRadius(16)
+        .padding(AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .cornerRadius(AppRadius.lg)
     }
     
     private func detailRow(title: String, value: String) -> some View {
@@ -385,41 +392,158 @@ struct MedicationDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
+    // MARK: - Related Health Metrics Section
+
+    private var relatedHealthMetricsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("관련 건강 지표")
+                .font(.headline)
+
+            Text("\(medication.medicationCategory.displayName) 약물과 관련된 건강 지표를 추적하세요")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            VStack(spacing: 8) {
+                ForEach(medication.relatedMetricTypes) { metricType in
+                    HStack {
+                        Image(systemName: metricType.icon)
+                            .font(.system(size: 18))
+                            .foregroundColor(metricType.color)
+                            .frame(width: 32, height: 32)
+                            .background(metricType.color.opacity(0.1))
+                            .cornerRadius(8)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(metricType.displayName)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+
+                            if let latestMetric = viewModel.latestMetrics[metricType] {
+                                Text("\(latestMetric.displayValue) \(latestMetric.unit) · \(latestMetric.recordedAt.relativeTimeString)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text("아직 기록된 데이터가 없습니다")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, AppSpacing.sm)
+                    .padding(.horizontal, AppSpacing.md)
+                    .background(AppColors.cardBackground.opacity(0.5))
+                    .cornerRadius(AppRadius.md)
+                }
+            }
+        }
+        .padding(AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .cornerRadius(AppRadius.lg)
+    }
+
     // MARK: - Stock Input Sheet
-    
+
     private var stockInputSheet: some View {
         NavigationStack {
-            Form {
-                Section("재고 추가") {
-                    TextField("수량", text: $stockAmount)
-                        .keyboardType(.numberPad)
-                }
+            VStack(spacing: AppSpacing.xl) {
+                Spacer()
+                    .frame(height: AppSpacing.md)
                 
-                Section {
-                    Button("추가") {
+                // 아이콘
+                Circle()
+                    .fill(AppColors.primary.opacity(0.1))
+                    .frame(width: 80, height: 80)
+                    .overlay {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(AppColors.primary)
+                    }
+
+                VStack(spacing: AppSpacing.xs) {
+                    Text("재고 추가")
+                        .font(AppTypography.title3)
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Text(medication.name)
+                        .font(AppTypography.body)
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
+                // 수량 입력
+                VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                    Text("추가할 수량")
+                        .font(AppTypography.caption)
+                        .foregroundColor(AppColors.textSecondary)
+
+                    HStack {
+                        Image(systemName: "number")
+                            .foregroundColor(AppColors.textTertiary)
+                            .frame(width: 24)
+
+                        TextField("0", text: $stockAmount)
+                            .keyboardType(.numberPad)
+                            .font(AppTypography.body)
+                            .foregroundColor(AppColors.textPrimary)
+                    }
+                    .padding(AppSpacing.md)
+                    .background(AppColors.background)
+                    .cornerRadius(AppRadius.md)
+                }
+                .padding(.horizontal, AppSpacing.lg)
+
+                Spacer()
+
+                // 버튼들
+                VStack(spacing: AppSpacing.sm) {
+                    Button {
                         if let amount = Int(stockAmount), amount > 0 {
                             medication.increaseStock(by: amount)
                             try? modelContext.save()
                             stockAmount = ""
                             showStockSheet = false
                         }
+                    } label: {
+                        Text("추가")
+                            .font(AppTypography.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(AppSpacing.md)
+                            .background(
+                                (Int(stockAmount) ?? 0) > 0
+                                    ? AppColors.primaryGradient
+                                    : LinearGradient(colors: [AppColors.divider], startPoint: .top, endPoint: .bottom)
+                            )
+                            .cornerRadius(AppRadius.md)
                     }
                     .disabled(Int(stockAmount) == nil || Int(stockAmount)! <= 0)
-                }
-            }
-            .navigationTitle("재고 추가")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("취소") {
+
+                    Button {
                         stockAmount = ""
                         showStockSheet = false
+                    } label: {
+                        Text("취소")
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(AppColors.textSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(AppSpacing.md)
                     }
                 }
+                .padding(.horizontal, AppSpacing.lg)
             }
+            .padding(AppSpacing.lg)
+            .background(AppColors.cardBackground)
+            .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 }
 

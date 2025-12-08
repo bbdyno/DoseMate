@@ -33,7 +33,10 @@ final class Medication {
     
     /// 약물 색상
     var color: String = ""
-    
+
+    /// 약물 카테고리
+    var category: String = ""
+
     // MARK: - 의료 정보
     
     /// 복용 목적/질환
@@ -105,7 +108,22 @@ final class Medication {
     var medicationColor: MedicationColor {
         MedicationColor(rawValue: color) ?? .white
     }
-    
+
+    /// 약물 카테고리 열거형
+    var medicationCategory: MedicationCategory {
+        MedicationCategory(rawValue: category) ?? .other
+    }
+
+    /// 이 약물과 관련된 건강 지표 타입들
+    var relatedMetricTypes: [MetricType] {
+        medicationCategory.relatedMetricTypes
+    }
+
+    /// 주요 건강 지표 타입 (추천)
+    var primaryMetricType: MetricType? {
+        medicationCategory.primaryMetricType
+    }
+
     /// 활성 스케줄 목록
     var activeSchedules: [MedicationSchedule] {
         schedules.filter { $0.isActive }
@@ -162,6 +180,7 @@ final class Medication {
         strength: String = "",
         form: MedicationForm = .tablet,
         color: MedicationColor = .white,
+        category: MedicationCategory = .other,
         purpose: String = "",
         prescribingDoctor: String = "",
         sideEffects: String = "",
@@ -178,6 +197,7 @@ final class Medication {
         self.strength = strength
         self.form = form.rawValue
         self.color = color.rawValue
+        self.category = category.rawValue
         self.purpose = purpose
         self.prescribingDoctor = prescribingDoctor
         self.sideEffects = sideEffects

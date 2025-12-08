@@ -27,6 +27,7 @@ struct AddMedicationView: View {
     @State private var strength = ""
     @State private var selectedForm: MedicationForm = .tablet
     @State private var selectedColor: MedicationColor = .white
+    @State private var selectedCategory: MedicationCategory = .other
     @State private var purpose = ""
     @State private var prescribingDoctor = ""
     @State private var sideEffects = ""
@@ -74,6 +75,7 @@ struct AddMedicationView: View {
             _strength = State(initialValue: medication.strength)
             _selectedForm = State(initialValue: medication.medicationForm)
             _selectedColor = State(initialValue: medication.medicationColor)
+            _selectedCategory = State(initialValue: medication.medicationCategory)
             _purpose = State(initialValue: medication.purpose)
             _prescribingDoctor = State(initialValue: medication.prescribingDoctor)
             _sideEffects = State(initialValue: medication.sideEffects)
@@ -197,13 +199,58 @@ struct AddMedicationView: View {
                         }
                         
                         Divider()
-                        
+
+                        // 카테고리 선택
+                        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                            Text("약물 카테고리")
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.textSecondary)
+
+                            Menu {
+                                ForEach(MedicationCategory.allCases) { category in
+                                    Button {
+                                        selectedCategory = category
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: category.icon)
+                                            Text(category.displayName)
+                                            if selectedCategory == category {
+                                                Spacer()
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Image(systemName: selectedCategory.icon)
+                                        .foregroundColor(AppColors.primary)
+                                        .frame(width: 24)
+
+                                    Text(selectedCategory.displayName)
+                                        .font(AppTypography.body)
+                                        .foregroundColor(AppColors.textPrimary)
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption)
+                                        .foregroundColor(AppColors.textTertiary)
+                                }
+                                .padding(AppSpacing.md)
+                                .background(AppColors.background)
+                                .cornerRadius(AppRadius.md)
+                            }
+                        }
+
+                        Divider()
+
                         // 색상 선택
                         VStack(alignment: .leading, spacing: AppSpacing.xs) {
                             Text("색상")
                                 .font(AppTypography.caption)
                                 .foregroundColor(AppColors.textSecondary)
-                            
+
                             LazyVGrid(columns: [
                                 GridItem(.adaptive(minimum: 60))
                             ], spacing: AppSpacing.sm) {
@@ -898,6 +945,7 @@ struct AddMedicationView: View {
             medication.strength = strength
             medication.form = selectedForm.rawValue
             medication.color = selectedColor.rawValue
+            medication.category = selectedCategory.rawValue
             medication.purpose = purpose
             medication.prescribingDoctor = prescribingDoctor
             medication.sideEffects = sideEffects
@@ -913,6 +961,7 @@ struct AddMedicationView: View {
                 strength: strength,
                 form: selectedForm,
                 color: selectedColor,
+                category: selectedCategory,
                 purpose: purpose,
                 prescribingDoctor: prescribingDoctor,
                 sideEffects: sideEffects,

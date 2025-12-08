@@ -72,7 +72,13 @@ final class HealthMetricsViewModel {
     
     /// 메모
     var inputNotes: String = ""
-    
+
+    /// 선택된 약물 (건강 지표와 연관)
+    var selectedMedication: Medication?
+
+    /// 약물 목록
+    var medications: [Medication] = []
+
     // MARK: - Private Properties
     
     private var modelContext: ModelContext?
@@ -89,6 +95,23 @@ final class HealthMetricsViewModel {
         self.modelContext = context
         Task {
             await loadAllLatestMetrics()
+            await loadMedications()
+        }
+    }
+
+    /// 약물 목록 로드
+    func loadMedications() async {
+        guard let context = modelContext else { return }
+
+        let descriptor = FetchDescriptor<Medication>(
+            predicate: #Predicate { $0.isActive == true },
+            sortBy: [SortDescriptor(\.name)]
+        )
+
+        do {
+            medications = try context.fetch(descriptor)
+        } catch {
+            print("Failed to load medications: \(error)")
         }
     }
     
@@ -295,12 +318,42 @@ final class HealthMetricsViewModel {
     /// 입력 시트 열기
     func openInputSheet(for type: MetricType) {
         inputMetricType = type
-        inputValue = ""
-        inputSystolic = ""
-        inputDiastolic = ""
-        inputMoodLevel = .neutral
+
+        // 최신 값이 있으면 기본값으로 설정, 없으면 0
+        if let latestMetric = latestMetrics[type] {
+            switch type {
+            case .bloodPressure:
+                inputSystolic = latestMetric.systolicValue.map { String(Int($0)) } ?? "0"
+                inputDiastolic = latestMetric.diastolicValue.map { String(Int($0)) } ?? "0"
+                inputValue = ""
+            case .mood:
+                inputMoodLevel = MoodLevel(rawValue: Int(latestMetric.value)) ?? .neutral
+                inputValue = ""
+                inputSystolic = ""
+                inputDiastolic = ""
+            default:
+                inputValue = String(Int(latestMetric.value))
+                inputSystolic = ""
+                inputDiastolic = ""
+            }
+        } else {
+            // 기본값 0
+            inputValue = "0"
+            inputSystolic = "0"
+            inputDiastolic = "0"
+            inputMoodLevel = .neutral
+        }
+
         inputNotes = ""
+        selectedMedication = nil
         showInputSheet = true
+    }
+
+    /// 특정 지표 타입과 관련된 약물 목록
+    func relatedMedications(for type: MetricType) -> [Medication] {
+        medications.filter { medication in
+            medication.relatedMetricTypes.contains(type)
+        }
     }
     
     /// 지표 저장
@@ -342,7 +395,10 @@ final class HealthMetricsViewModel {
                 source: .manual
             )
         }
-        
+
+        // 선택된 약물 연결
+        metric.medication = selectedMedication
+
         context.insert(metric)
         
         do {

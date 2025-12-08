@@ -517,9 +517,9 @@ enum MedicationColor: String, Codable, CaseIterable, Identifiable {
     case purple = "purple"
     case black = "black"
     case multicolor = "multicolor"
-    
+
     var id: String { rawValue }
-    
+
     var displayName: String {
         switch self {
         case .white: return "흰색"
@@ -535,7 +535,7 @@ enum MedicationColor: String, Codable, CaseIterable, Identifiable {
         case .multicolor: return "여러색"
         }
     }
-    
+
     var swiftUIColor: Color {
         switch self {
         case .white: return .white
@@ -551,9 +551,87 @@ enum MedicationColor: String, Codable, CaseIterable, Identifiable {
         case .multicolor: return .gray
         }
     }
-    
+
     /// Alias for swiftUIColor
     var color: Color {
         swiftUIColor
+    }
+}
+
+// MARK: - 약물 카테고리
+/// 약물의 치료 목적/카테고리를 정의합니다.
+enum MedicationCategory: String, Codable, CaseIterable, Identifiable {
+    case cardiovascular = "cardiovascular"         // 심혈관계 (혈압약 등)
+    case diabetes = "diabetes"                     // 당뇨병
+    case respiratory = "respiratory"               // 호흡기
+    case pain = "pain"                            // 진통제
+    case gastrointestinal = "gastrointestinal"    // 소화기계
+    case mental = "mental"                        // 정신건강
+    case antibiotic = "antibiotic"                // 항생제
+    case vitamin = "vitamin"                      // 비타민/보충제
+    case thyroid = "thyroid"                      // 갑상선
+    case other = "other"                          // 기타
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .cardiovascular: return "심혈관계"
+        case .diabetes: return "당뇨병"
+        case .respiratory: return "호흡기"
+        case .pain: return "진통제"
+        case .gastrointestinal: return "소화기계"
+        case .mental: return "정신건강"
+        case .antibiotic: return "항생제"
+        case .vitamin: return "비타민/보충제"
+        case .thyroid: return "갑상선"
+        case .other: return "기타"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .cardiovascular: return "heart.fill"
+        case .diabetes: return "drop.fill"
+        case .respiratory: return "lungs.fill"
+        case .pain: return "bolt.fill"
+        case .gastrointestinal: return "stomach.fill"
+        case .mental: return "brain.fill"
+        case .antibiotic: return "cross.fill"
+        case .vitamin: return "leaf.fill"
+        case .thyroid: return "circle.hexagongrid.fill"
+        case .other: return "pill.fill"
+        }
+    }
+
+    /// 이 카테고리와 관련된 건강 지표 타입들
+    var relatedMetricTypes: [MetricType] {
+        switch self {
+        case .cardiovascular:
+            return [.bloodPressure, .heartRate]
+        case .diabetes:
+            return [.bloodGlucose, .hbA1C, .weight]
+        case .respiratory:
+            return [.oxygenSaturation]
+        case .pain:
+            return [.mood]
+        case .gastrointestinal:
+            return [.weight, .mood]
+        case .mental:
+            return [.mood, .sleep]
+        case .antibiotic:
+            return [.bodyTemperature]
+        case .vitamin:
+            return [.weight]
+        case .thyroid:
+            return [.weight, .heartRate]
+        case .other:
+            return []
+        }
+    }
+
+    /// 주요 건강 지표 (첫 번째)
+    var primaryMetricType: MetricType? {
+        relatedMetricTypes.first
     }
 }

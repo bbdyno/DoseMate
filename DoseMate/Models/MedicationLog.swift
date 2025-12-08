@@ -24,7 +24,11 @@ final class MedicationLog {
     
     /// 연관된 스케줄
     var schedule: MedicationSchedule?
-    
+
+    /// 복약 후 기록된 건강 지표들
+    @Relationship(deleteRule: .nullify)
+    var healthMetrics: [HealthMetric] = []
+
     // MARK: - 시간 정보
     
     /// 예정 시간

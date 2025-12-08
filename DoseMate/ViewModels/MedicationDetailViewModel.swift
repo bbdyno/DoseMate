@@ -69,12 +69,15 @@ final class MedicationDetailViewModel {
     
     /// 뷰 모드 (달력/리스트)
     var viewMode: ViewMode = .calendar
-    
+
     enum ViewMode: String, CaseIterable {
         case calendar = "달력"
         case list = "목록"
     }
-    
+
+    /// 최신 건강 지표들
+    var latestMetrics: [MetricType: HealthMetric] = [:]
+
     // MARK: - Private Properties
     
     private var modelContext: ModelContext?
@@ -92,7 +95,34 @@ final class MedicationDetailViewModel {
         self.modelContext = context
         Task {
             await loadLogs()
+            await loadLatestMetrics()
             calculateStatistics()
+        }
+    }
+
+    /// 최신 건강 지표 로드
+    func loadLatestMetrics() async {
+        guard let context = modelContext else { return }
+
+        for type in medication.relatedMetricTypes {
+            let typeString = type.rawValue
+            let medicationId = medication.id
+
+            let predicate = #Predicate<HealthMetric> { metric in
+                metric.type == typeString &&
+                metric.medication?.id == medicationId
+            }
+
+            var descriptor = FetchDescriptor<HealthMetric>(
+                predicate: predicate,
+                sortBy: [SortDescriptor(\.recordedAt, order: .reverse)]
+            )
+            descriptor.fetchLimit = 1
+
+            if let metrics = try? context.fetch(descriptor),
+               let latest = metrics.first {
+                latestMetrics[type] = latest
+            }
         }
     }
     

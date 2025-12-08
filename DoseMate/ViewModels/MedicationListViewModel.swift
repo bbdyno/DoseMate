@@ -182,21 +182,37 @@ final class MedicationListViewModel {
     
     /// 약물 추가
     func addMedication(_ medication: Medication) async {
-        guard let context = modelContext else { return }
-        
+        guard let context = modelContext else {
+            print("❌ ModelContext가 없습니다")
+            errorMessage = "데이터베이스 연결에 실패했습니다."
+            return
+        }
+
         // 💎 프리미엄 체크
         guard canAddMedication else {
             errorMessage = "무료 버전에서는 약물을 \(PremiumFeatures.freeMedicationLimit)개까지만 등록할 수 있습니다. 프리미엄으로 업그레이드하세요."
             return
         }
-        
+
+        print("✅ 약물 추가 시작: \(medication.name)")
+        print("   - 형태: \(medication.form)")
+        print("   - 색상: \(medication.color)")
+        print("   - 카테고리: \(medication.category)")
+        print("   - 용량: \(medication.dosage)")
+        print("   - 스케줄 수: \(medication.schedules.count)")
+
         context.insert(medication)
-        
+        print("✅ Context에 insert 완료")
+
         do {
             try context.save()
+            print("✅ Context save 완료")
             await loadMedications()
+            print("✅ 약물 목록 다시 로드 완료. 현재 약물 수: \(medications.count)")
         } catch {
-            errorMessage = "약물 추가에 실패했습니다."
+            print("❌ 약물 저장 실패: \(error.localizedDescription)")
+            print("   상세 오류: \(error)")
+            errorMessage = "약물 추가에 실패했습니다: \(error.localizedDescription)"
         }
     }
     

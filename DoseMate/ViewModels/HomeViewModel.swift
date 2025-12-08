@@ -57,7 +57,13 @@ final class HomeViewModel {
     
     /// 복용 완료 처리 중인 로그 ID
     var processingLogId: UUID?
-    
+
+    /// 건강 지표 입력 제안 표시 (복약 완료 후)
+    var showHealthMetricPrompt: Bool = false
+
+    /// 건강 지표 입력용 복약 기록
+    var logForHealthMetric: MedicationLog?
+
     // MARK: - Private Properties
     
     private var modelContext: ModelContext?
@@ -413,20 +419,28 @@ final class HomeViewModel {
     /// 복용 완료 처리
     func markAsTaken(_ log: MedicationLog) async {
         processingLogId = log.id
-        
+
         defer { processingLogId = nil }
-        
+
         log.markAsTaken()
-        
+
         // 재고 감소는 markAsTaken 내부에서 처리됨
-        
+
         try? modelContext?.save()
-        
+
         await loadData()
-        
+
         // 햅틱 피드백
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
+
+        // 건강 지표 입력 제안 (관련 지표가 있는 약물만)
+        if let medication = log.medication,
+           !medication.relatedMetricTypes.isEmpty,
+           PremiumFeatures.canUseHealthKit {
+            logForHealthMetric = log
+            showHealthMetricPrompt = true
+        }
     }
     
     /// 건너뛰기 처리
@@ -466,7 +480,42 @@ final class HomeViewModel {
     func refresh() async {
         await loadData()
     }
-    
+
+    /// 건강 지표 저장 (복약 기록과 연결)
+    func saveHealthMetric(type: MetricType, value: Double, systolic: Double? = nil, diastolic: Double? = nil) async {
+        guard let context = modelContext,
+              let log = logForHealthMetric,
+              let medication = log.medication else { return }
+
+        let metric: HealthMetric
+
+        if type == .bloodPressure, let sys = systolic, let dia = diastolic {
+            metric = HealthMetric(
+                bloodPressure: sys,
+                diastolic: dia,
+                source: .manual
+            )
+        } else {
+            metric = HealthMetric(
+                type: type,
+                value: value,
+                source: .manual
+            )
+        }
+
+        // 약물과 연결
+        metric.medication = medication
+
+        // 복약 기록과 연결
+        log.healthMetrics.append(metric)
+
+        context.insert(metric)
+        try? context.save()
+
+        showHealthMetricPrompt = false
+        logForHealthMetric = nil
+    }
+
     // MARK: - Computed Properties
     
     /// 대기 중인 복약 수

@@ -97,6 +97,9 @@ struct HomeView: View {
                     // 약물 추가 후 자동으로 리프레시됨
                 }
             }
+            .sheet(isPresented: $viewModel.showHealthMetricPrompt) {
+                quickHealthMetricInputSheet
+            }
         }
     }
     
@@ -557,6 +560,109 @@ struct HomeView: View {
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+    }
+
+    // MARK: - Quick Health Metric Input Sheet
+
+    private var quickHealthMetricInputSheet: some View {
+        NavigationStack {
+            VStack(spacing: AppSpacing.lg) {
+                if let log = viewModel.logForHealthMetric,
+                   let medication = log.medication {
+
+                    // 약물 정보
+                    HStack(spacing: AppSpacing.md) {
+                        Circle()
+                            .fill(medication.medicationColor.swiftUIColor.gradient)
+                            .frame(width: 48, height: 48)
+                            .overlay {
+                                Image(systemName: medication.medicationForm.icon)
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white)
+                            }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(medication.name)
+                                .font(AppTypography.headline)
+                                .foregroundColor(AppColors.textPrimary)
+
+                            Text("복약 완료 후 건강 지표를 기록하세요")
+                                .font(AppTypography.caption)
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+
+                        Spacer()
+                    }
+                    .padding(AppSpacing.md)
+                    .background(AppColors.cardBackground)
+                    .cornerRadius(AppRadius.lg)
+
+                    // 관련 건강 지표 버튼들
+                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                        Text("측정할 건강 지표 선택")
+                            .font(AppTypography.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppColors.textPrimary)
+
+                        ForEach(medication.relatedMetricTypes.prefix(3)) { metricType in
+                            Button {
+                                viewModel.showHealthMetricPrompt = false
+                                // TODO: 건강 탭으로 이동하거나 바로 입력
+                            } label: {
+                                HStack {
+                                    Image(systemName: metricType.icon)
+                                        .font(.system(size: 20))
+                                        .foregroundColor(metricType.color)
+                                        .frame(width: 40, height: 40)
+                                        .background(metricType.color.opacity(0.1))
+                                        .cornerRadius(AppRadius.sm)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(metricType.displayName)
+                                            .font(AppTypography.subheadline)
+                                            .foregroundColor(AppColors.textPrimary)
+
+                                        Text("지금 \(metricType.displayName)을(를) 기록하세요")
+                                            .font(AppTypography.caption2)
+                                            .foregroundColor(AppColors.textSecondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(AppColors.textTertiary)
+                                }
+                                .padding(AppSpacing.md)
+                                .background(AppColors.cardBackground)
+                                .cornerRadius(AppRadius.lg)
+                                .shadow(color: Color.black.opacity(0.04), radius: 8, y: 2)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    Spacer()
+
+                    // 나중에 하기 버튼
+                    Button {
+                        viewModel.showHealthMetricPrompt = false
+                        viewModel.logForHealthMetric = nil
+                    } label: {
+                        Text("나중에 기록하기")
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(AppColors.textSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(AppSpacing.md)
+                    }
+                }
+            }
+            .padding(AppSpacing.lg)
+            .background(AppColors.background)
+            .navigationTitle("건강 지표 기록")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .presentationDetents([.medium])
     }
 }
 

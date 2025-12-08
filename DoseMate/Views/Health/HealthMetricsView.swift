@@ -567,6 +567,64 @@ struct HealthMetricsView: View {
                         .background(AppColors.cardBackground)
                         .cornerRadius(AppRadius.lg)
                         
+                        // 연관 약물 선택
+                        if let type = viewModel.inputMetricType,
+                           !viewModel.relatedMedications(for: type).isEmpty {
+                            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                                Text("관련 약물 (선택사항)")
+                                    .font(AppTypography.caption)
+                                    .foregroundColor(AppColors.textSecondary)
+
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: AppSpacing.sm) {
+                                        ForEach(viewModel.relatedMedications(for: type)) { medication in
+                                            Button {
+                                                if viewModel.selectedMedication == medication {
+                                                    viewModel.selectedMedication = nil
+                                                } else {
+                                                    viewModel.selectedMedication = medication
+                                                }
+                                            } label: {
+                                                HStack(spacing: AppSpacing.xs) {
+                                                    Circle()
+                                                        .fill(medication.medicationColor.swiftUIColor)
+                                                        .frame(width: 12, height: 12)
+
+                                                    Text(medication.name)
+                                                        .font(AppTypography.caption)
+                                                }
+                                                .padding(.horizontal, AppSpacing.sm)
+                                                .padding(.vertical, AppSpacing.xs)
+                                                .background(
+                                                    viewModel.selectedMedication == medication
+                                                        ? medication.medicationColor.swiftUIColor.opacity(0.2)
+                                                        : AppColors.background
+                                                )
+                                                .foregroundColor(
+                                                    viewModel.selectedMedication == medication
+                                                        ? medication.medicationColor.swiftUIColor
+                                                        : AppColors.textPrimary
+                                                )
+                                                .cornerRadius(AppRadius.full)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: AppRadius.full)
+                                                        .stroke(
+                                                            viewModel.selectedMedication == medication
+                                                                ? medication.medicationColor.swiftUIColor
+                                                                : AppColors.divider,
+                                                            lineWidth: 1
+                                                        )
+                                                )
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                    }
+                                    .padding(.horizontal, AppSpacing.lg)
+                                }
+                                .padding(.horizontal, -AppSpacing.lg)
+                            }
+                        }
+
                         // 메모
                         TextField(DoseMateStrings.Health.notesOptional, text: $viewModel.inputNotes)
                             .padding(AppSpacing.md)
@@ -594,6 +652,7 @@ struct HealthMetricsView: View {
             .background(AppColors.background)
             .navigationTitle(viewModel.inputMetricType?.displayName ?? DoseMateStrings.Health.inputTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.clear, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if viewModel.inputMetricType != nil {
@@ -615,7 +674,7 @@ struct HealthMetricsView: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
     
@@ -651,7 +710,7 @@ struct HealthMetricCardView: View {
     let metric: HealthMetric?
     let isSelected: Bool
     let onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -659,26 +718,33 @@ struct HealthMetricCardView: View {
                     Image(systemName: type.icon)
                         .font(.system(size: 18))
                         .foregroundColor(type.color)
-                    
+
                     Spacer()
-                    
-                    if isSelected {
-                        Image(systemName: "chevron.up")
-                            .font(.caption)
-                            .foregroundColor(AppColors.textTertiary)
+
+                    // 선택 상태 표시
+                    HStack(spacing: AppSpacing.xs) {
+                        if isSelected {
+                            Text("차트 보기")
+                                .font(AppTypography.caption2)
+                                .foregroundColor(type.color)
+                        }
+
+                        Image(systemName: isSelected ? "chevron.up.circle.fill" : "chart.line.uptrend.xyaxis")
+                            .font(.system(size: isSelected ? 20 : 16))
+                            .foregroundColor(isSelected ? type.color : AppColors.textTertiary)
                     }
                 }
-                
+
                 Text(type.displayName)
                     .font(AppTypography.caption)
                     .foregroundColor(AppColors.textSecondary)
-                
+
                 if let metric = metric {
                     Text(metric.displayValue)
                         .font(AppTypography.title3)
                         .fontWeight(.bold)
                         .foregroundColor(AppColors.textPrimary)
-                    
+
                     Text(metric.recordedAt.relativeTimeString)
                         .font(AppTypography.caption2)
                         .foregroundColor(AppColors.textTertiary)
@@ -699,9 +765,13 @@ struct HealthMetricCardView: View {
             .cornerRadius(AppRadius.lg)
             .overlay(
                 RoundedRectangle(cornerRadius: AppRadius.lg)
-                    .stroke(isSelected ? type.color.opacity(0.5) : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? type.color : Color.clear, lineWidth: 2)
             )
-            .shadow(color: Color.black.opacity(0.04), radius: 8, y: 2)
+            .shadow(
+                color: isSelected ? type.color.opacity(0.2) : Color.black.opacity(0.04),
+                radius: isSelected ? 12 : 8,
+                y: 2
+            )
         }
         .buttonStyle(.plain)
     }
