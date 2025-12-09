@@ -31,15 +31,6 @@ final class DataManager: ObservableObject {
     
     private init() {
         do {
-            let schema = Schema([
-                Medication.self,
-                MedicationSchedule.self,
-                MedicationLog.self,
-                HealthMetric.self,
-                Appointment.self,
-                Caregiver.self
-            ])
-
             // App Group을 사용하여 위젯과 데이터 공유
             let appGroupIdentifier = "group.com.bbdyno.app.doseMate"
             guard let groupContainerURL = FileManager.default.containerURL(
@@ -48,20 +39,26 @@ final class DataManager: ObservableObject {
                 fatalError("App Group 컨테이너를 찾을 수 없습니다. Entitlements를 확인하세요.")
             }
 
-            let modelConfiguration = ModelConfiguration(
-                schema: schema,
-                url: groupContainerURL.appendingPathComponent("DoseMate.sqlite"),
-                allowsSave: true,
+            // MigrationPlan과 함께 컨테이너 생성
+            let schema = Schema(versionedSchema: DoseMateSchemaV1.self)
+            let storeURL = groupContainerURL.appendingPathComponent("DoseMate.sqlite")
+            let config = ModelConfiguration(
+                url: storeURL,
                 cloudKitDatabase: .automatic
             )
 
             container = try ModelContainer(
                 for: schema,
-                configurations: [modelConfiguration]
+                migrationPlan: DoseMateSchemaHistory.self,
+                configurations: [config]
             )
 
-            print("SwiftData 컨테이너 초기화 완료: \(groupContainerURL.path)")
-        } catch {
+            print("DataManager SwiftData 컨테이너 초기화 완료: \(groupContainerURL.path)")
+        } catch let error as NSError {
+            print("DataManager ModelContainer 생성 실패: \(error)")
+            print("- 오류 도메인: \(error.domain)")
+            print("- 오류 코드: \(error.code)")
+            print("- 상세 정보: \(error.userInfo)")
             fatalError("Failed to create ModelContainer: \(error)")
         }
     }

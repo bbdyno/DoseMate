@@ -29,17 +29,6 @@ struct DoseMateApp: App {
     // MARK: - Initialization
     
     init() {
-        // 모델 컨테이너 설정
-        let schema = Schema([
-            Medication.self,
-            MedicationSchedule.self,
-            MedicationLog.self,
-            HealthMetric.self,
-            Appointment.self,
-            Caregiver.self,
-            Patient.self
-        ])
-        
         // iCloud 동기화 설정 (프리미엄 + 사용자 설정에 따라)
         let shouldEnableCloudKit = Self.shouldEnableCloudSync()
 
@@ -51,35 +40,81 @@ struct DoseMateApp: App {
             fatalError("App Group 컨테이너를 찾을 수 없습니다. Entitlements를 확인하세요.")
         }
 
-        let modelConfiguration: ModelConfiguration
-        if shouldEnableCloudKit {
-            // iCloud 동기화 활성화
-            modelConfiguration = ModelConfiguration(
-                schema: schema,
-                url: groupContainerURL.appendingPathComponent("DoseMate.sqlite"),
-                allowsSave: true,
-                cloudKitDatabase: .automatic
-            )
-            print("iCloud 동기화 활성화됨")
-        } else {
-            // 로컬 전용
-            modelConfiguration = ModelConfiguration(
-                schema: schema,
-                url: groupContainerURL.appendingPathComponent("DoseMate.sqlite"),
-                allowsSave: true,
-                cloudKitDatabase: .none
-            )
-            print("로컬 전용 모드")
+        print("SwiftData 컨테이너 초기화: \(groupContainerURL.path)")
+
+        // 마이그레이션 전 백업 생성 (기존 데이터가 있는 경우)
+        Task { @MainActor in
+            if MigrationManager.shared.needsMigration() {
+                print("마이그레이션 감지, 백업 생성 중...")
+                _ = MigrationManager.shared.createBackup()
+                // 오래된 백업 정리 (최근 5개 유지)
+                MigrationManager.shared.cleanupOldBackups(keepRecent: 5)
+            }
         }
 
-        print("SwiftData 컨테이너 초기화: \(groupContainerURL.path)")
-        
         do {
-            modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            // VersionedSchema와 MigrationPlan을 사용한 컨테이너 생성
+            let schema = Schema(versionedSchema: DoseMateSchemaV1.self)
+            let storeURL = groupContainerURL.appendingPathComponent("DoseMate.sqlite")
+
+            if shouldEnableCloudKit {
+                // iCloud 동기화 활성화
+                let config = ModelConfiguration(
+                    url: storeURL,
+                    cloudKitDatabase: .automatic
+                )
+                modelContainer = try ModelContainer(
+                    for: schema,
+                    migrationPlan: DoseMateSchemaHistory.self,
+                    configurations: [config]
+                )
+                print("iCloud 동기화 활성화됨")
+            } else {
+                // 로컬 전용
+                let config = ModelConfiguration(
+                    url: storeURL,
+                    cloudKitDatabase: .none
+                )
+                modelContainer = try ModelContainer(
+                    for: schema,
+                    migrationPlan: DoseMateSchemaHistory.self,
+                    configurations: [config]
+                )
+                print("로컬 전용 모드")
+            }
+            print("스키마 마이그레이션 준비 완료")
+        } catch let error as NSError {
+            // 마이그레이션 실패 처리
+            print("ModelContainer 생성 실패: \(error)")
+            print("- 오류 도메인: \(error.domain)")
+            print("- 오류 코드: \(error.code)")
+            print("- 상세 정보: \(error.userInfo)")
+
+            // iCloud 동기화 관련 오류인 경우 로컬 모드로 재시도
+            if shouldEnableCloudKit && error.domain == "NSCocoaErrorDomain" {
+                print("iCloud 오류 감지. 로컬 전용 모드로 재시도...")
+
+                do {
+                    let schema = Schema(versionedSchema: DoseMateSchemaV1.self)
+                    let storeURL = groupContainerURL.appendingPathComponent("DoseMate.sqlite")
+                    let config = ModelConfiguration(
+                        url: storeURL,
+                        cloudKitDatabase: .none
+                    )
+                    modelContainer = try ModelContainer(
+                        for: schema,
+                        migrationPlan: DoseMateSchemaHistory.self,
+                        configurations: [config]
+                    )
+                    print("로컬 모드로 복구 성공")
+                } catch {
+                    fatalError("Failed to create ModelContainer even in fallback mode: \(error)")
+                }
+            } else {
+                fatalError("Failed to create ModelContainer: \(error)")
+            }
         }
-        
+
         // 외관 설정
         configureAppearance()
     }
