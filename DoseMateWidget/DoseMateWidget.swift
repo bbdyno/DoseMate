@@ -8,6 +8,15 @@
 import WidgetKit
 import SwiftUI
 
+// MARK: - Widget Bundle
+
+@main
+struct DoseMateWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        PillReminderWidget()
+    }
+}
+
 // MARK: - Widget Entry
 
 /// 위젯 타임라인 엔트리
@@ -56,67 +65,106 @@ struct Provider: TimelineProvider {
     }
     
     func getSnapshot(in context: Context, completion: @escaping (MedicationEntry) -> Void) {
-        let entry = MedicationEntry(
-            date: Date(),
-            medications: getSampleMedications(),
-            adherenceRate: 0.85,
-            nextDose: nil
-        )
+        let entry = createEntry()
         completion(entry)
     }
-    
+
     func getTimeline(in context: Context, completion: @escaping (Timeline<MedicationEntry>) -> Void) {
-        let entry = MedicationEntry(
-            date: Date(),
-            medications: getSampleMedications(),
-            adherenceRate: calculateTodayAdherence(),
-            nextDose: getNextDose()
-        )
-        
+        let entry = createEntry()
+
         // 15분마다 업데이트
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-        
+
         completion(timeline)
     }
-    
-    private func getSampleMedications() -> [MedicationEntry.MedicationItem] {
-        // 실제 구현에서는 App Group을 통해 SwiftData에서 데이터 로드
-        // 여기서는 샘플 데이터 반환
-        return [
-            MedicationEntry.MedicationItem(
+
+    // MARK: - Data Loading
+
+    /// 위젯 엔트리 생성 (실제 데이터 사용)
+    private func createEntry() -> MedicationEntry {
+        // 위젯 데이터 매니저에서 데이터 로드
+        if let widgetData = WidgetDataManager.shared.getWidgetData() {
+            // 실제 데이터 사용
+            let medications = widgetData.medications.map { item in
+                MedicationEntry.MedicationItem(
+                    id: item.id,
+                    name: item.name,
+                    dosage: item.dosage,
+                    scheduledTime: item.scheduledTime,
+                    status: getStatusDisplayName(item.status),
+                    statusColor: item.statusColor
+                )
+            }
+
+            let nextDose = widgetData.nextDose.map { item in
+                MedicationEntry.MedicationItem(
+                    id: item.id,
+                    name: item.name,
+                    dosage: item.dosage,
+                    scheduledTime: item.scheduledTime,
+                    status: getStatusDisplayName(item.status),
+                    statusColor: item.statusColor
+                )
+            }
+
+            return MedicationEntry(
+                date: widgetData.updatedAt,
+                medications: medications,
+                adherenceRate: widgetData.adherenceRate,
+                nextDose: nextDose
+            )
+        } else {
+            // 데이터가 없으면 샘플 데이터 사용
+            print("[Widget] 위젯 데이터를 찾을 수 없어 샘플 데이터를 사용합니다.")
+            return createSampleEntry()
+        }
+    }
+
+    /// 샘플 엔트리 생성
+    private func createSampleEntry() -> MedicationEntry {
+        return MedicationEntry(
+            date: Date(),
+            medications: [
+                MedicationEntry.MedicationItem(
+                    id: UUID(),
+                    name: "아스피린",
+                    dosage: "100mg",
+                    scheduledTime: Date().addingTimeInterval(30 * 60),
+                    status: "대기",
+                    statusColor: .orange
+                ),
+                MedicationEntry.MedicationItem(
+                    id: UUID(),
+                    name: "메트포르민",
+                    dosage: "500mg",
+                    scheduledTime: Date().addingTimeInterval(-60 * 60),
+                    status: "완료",
+                    statusColor: .green
+                )
+            ],
+            adherenceRate: 0.75,
+            nextDose: MedicationEntry.MedicationItem(
                 id: UUID(),
                 name: "아스피린",
                 dosage: "100mg",
                 scheduledTime: Date().addingTimeInterval(30 * 60),
                 status: "대기",
                 statusColor: .orange
-            ),
-            MedicationEntry.MedicationItem(
-                id: UUID(),
-                name: "메트포르민",
-                dosage: "500mg",
-                scheduledTime: Date().addingTimeInterval(-60 * 60),
-                status: "완료",
-                statusColor: .green
             )
-        ]
-    }
-    
-    private func calculateTodayAdherence() -> Double {
-        // 실제 구현에서는 SwiftData에서 계산
-        return 0.75
-    }
-    
-    private func getNextDose() -> MedicationEntry.MedicationItem? {
-        return MedicationEntry.MedicationItem(
-            id: UUID(),
-            name: "아스피린",
-            dosage: "100mg",
-            scheduledTime: Date().addingTimeInterval(30 * 60),
-            status: "대기",
-            statusColor: .orange
         )
+    }
+
+    /// 상태 표시 이름 변환
+    private func getStatusDisplayName(_ status: String) -> String {
+        switch status {
+        case "taken": return "완료"
+        case "pending": return "대기"
+        case "skipped": return "건너뜀"
+        case "delayed": return "지연"
+        case "snoozed": return "미루기"
+        default: return status
+        }
     }
 }
 
@@ -125,53 +173,113 @@ struct Provider: TimelineProvider {
 /// 소형 위젯 뷰
 struct SmallWidgetView: View {
     let entry: MedicationEntry
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // 준수율
-            HStack {
-                Text("\(Int(entry.adherenceRate * 100))%")
-                    .font(.system(.title, design: .rounded))
-                    .fontWeight(.bold)
-                    .foregroundColor(adherenceColor)
-                
-                Spacer()
-                
-                Image(systemName: "pill.fill")
-                    .foregroundColor(.blue)
-            }
-            
-            Text("오늘 준수율")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Spacer()
-            
-            // 다음 복약
-            if let next = entry.nextDose {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("다음 복약")
+        if entry.medications.isEmpty {
+            // 제로 케이스: 데이터 없음
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 60, height: 60)
+
+                    Image(systemName: "pill.circle")
+                        .font(.system(size: 30))
+                        .foregroundColor(.gray)
+                }
+
+                VStack(spacing: 4) {
+                    Text("복약 데이터 없음")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    Text("앱에서 약물을 추가하세요")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                    
-                    Text(next.name)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                    
-                    Text(formatTime(next.scheduledTime))
-                        .font(.caption)
-                        .foregroundColor(.blue)
+                        .multilineTextAlignment(.center)
                 }
-            } else {
-                Text("오늘 복약 완료!")
-                    .font(.subheadline)
-                    .foregroundColor(.green)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(16)
+        } else {
+            VStack(alignment: .leading, spacing: 10) {
+                // 헤더 - 아이콘과 준수율
+                HStack(alignment: .top) {
+                    ZStack {
+                        Circle()
+                            .fill(adherenceColor.opacity(0.2))
+                            .frame(width: 44, height: 44)
+
+                        Image(systemName: "pills.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(adherenceColor)
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(Int(entry.adherenceRate * 100))%")
+                            .font(.system(.title2, design: .rounded))
+                            .fontWeight(.bold)
+                            .foregroundColor(adherenceColor)
+
+                        Text("준수율")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                // 다음 복약 정보
+                if let next = entry.nextDose {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock.fill")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+
+                            Text("다음 복약")
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Text(next.name)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .lineLimit(1)
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "bell.fill")
+                                .font(.caption2)
+                                .foregroundColor(next.statusColor)
+
+                            Text(formatTime(next.scheduledTime))
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(next.statusColor)
+                        }
+                    }
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.body)
+                            .foregroundColor(.green)
+
+                        Text("오늘 복약 완료!")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                    }
+                }
+            }
+            .padding(16)
         }
-        .padding()
     }
-    
+
     private var adherenceColor: Color {
         if entry.adherenceRate >= 0.8 { return .green }
         else if entry.adherenceRate >= 0.5 { return .orange }
@@ -182,160 +290,361 @@ struct SmallWidgetView: View {
 /// 중형 위젯 뷰
 struct MediumWidgetView: View {
     let entry: MedicationEntry
-    
+
     var body: some View {
-        HStack(spacing: 16) {
-            // 왼쪽: 준수율
-            VStack(spacing: 8) {
+        if entry.medications.isEmpty {
+            // 제로 케이스: 데이터 없음
+            HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 8)
-                    
-                    Circle()
-                        .trim(from: 0, to: entry.adherenceRate)
-                        .stroke(adherenceColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    
-                    Text("\(Int(entry.adherenceRate * 100))%")
-                        .font(.system(.headline, design: .rounded))
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 80, height: 80)
+
+                    Image(systemName: "pill.circle")
+                        .font(.system(size: 40))
+                        .foregroundColor(.gray)
+                }
+                .padding(.leading, 8)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("복약 데이터가 없습니다")
+                        .font(.headline)
                         .fontWeight(.bold)
+                        .foregroundColor(.primary)
+
+                    Text("DoseMate 앱에서\n약물을 추가해보세요")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+
+                    Spacer()
                 }
-                .frame(width: 60, height: 60)
-                
-                Text("준수율")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            
-            Divider()
-            
-            // 오른쪽: 오늘의 복약
-            VStack(alignment: .leading, spacing: 6) {
-                Text("오늘의 복약")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                ForEach(entry.medications.prefix(3)) { item in
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(item.statusColor)
-                            .frame(width: 8, height: 8)
-                        
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(item.name)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-                            
-                            Text(formatTime(item.scheduledTime))
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                    }
-                }
-                
+
                 Spacer()
             }
+            .frame(maxHeight: .infinity)
+            .padding(16)
+        } else {
+            HStack(spacing: 16) {
+                // 왼쪽: 준수율 원형 진행바
+                VStack(spacing: 10) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray.opacity(0.15), lineWidth: 10)
+
+                        Circle()
+                            .trim(from: 0, to: entry.adherenceRate)
+                            .stroke(
+                                adherenceColor,
+                                style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                            )
+                            .rotationEffect(.degrees(-90))
+
+                        VStack(spacing: 2) {
+                            Image(systemName: "pills.fill")
+                                .font(.title3)
+                                .foregroundColor(adherenceColor)
+
+                            Text("\(Int(entry.adherenceRate * 100))%")
+                                .font(.system(.headline, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundColor(adherenceColor)
+                        }
+                    }
+                    .frame(width: 80, height: 80)
+
+                    Text("오늘 준수율")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.leading, 4)
+
+                // 구분선
+                Rectangle()
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(width: 1)
+                    .padding(.vertical, 12)
+
+                // 오른쪽: 오늘의 복약 리스트
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "list.bullet.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Text("오늘의 복약")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+
+                        Spacer()
+
+                        Text("\(entry.medications.count)건")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.secondary.opacity(0.1))
+                            .clipShape(Capsule())
+                    }
+
+                    ForEach(entry.medications.prefix(3)) { item in
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(item.statusColor.opacity(0.2))
+                                    .frame(width: 28, height: 28)
+
+                                Image(systemName: statusIcon(for: item.status))
+                                    .font(.caption)
+                                    .foregroundColor(item.statusColor)
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.name)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .lineLimit(1)
+
+                                HStack(spacing: 4) {
+                                    Image(systemName: "clock.fill")
+                                        .font(.caption2)
+
+                                    Text(formatTime(item.scheduledTime))
+                                        .font(.caption2)
+                                }
+                                .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(.trailing, 4)
+            }
+            .padding(16)
         }
-        .padding()
     }
-    
+
     private var adherenceColor: Color {
         if entry.adherenceRate >= 0.8 { return .green }
         else if entry.adherenceRate >= 0.5 { return .orange }
         else { return .red }
+    }
+
+    private func statusIcon(for status: String) -> String {
+        switch status {
+        case "완료": return "checkmark"
+        case "대기": return "clock"
+        default: return "exclamationmark"
+        }
     }
 }
 
 /// 대형 위젯 뷰
 struct LargeWidgetView: View {
     let entry: MedicationEntry
-    
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // 헤더
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("복약 관리")
-                        .font(.headline)
-                    
-                    Text(Date(), style: .date)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
+        if entry.medications.isEmpty {
+            // 제로 케이스: 데이터 없음
+            VStack(spacing: 20) {
                 Spacer()
-                
-                // 준수율
-                VStack {
-                    Text("\(Int(entry.adherenceRate * 100))%")
-                        .font(.system(.title2, design: .rounded))
-                        .fontWeight(.bold)
-                        .foregroundColor(adherenceColor)
-                    
-                    Text("준수율")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+
+                ZStack {
+                    Circle()
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 100, height: 100)
+
+                    Image(systemName: "pill.circle")
+                        .font(.system(size: 50))
+                        .foregroundColor(.gray)
                 }
+
+                VStack(spacing: 8) {
+                    Text("복약 데이터가 없습니다")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+
+                    Text("DoseMate 앱에서 약물을 추가하고\n복약 일정을 관리하세요")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                HStack {
+                    Image(systemName: "hand.tap.fill")
+                        .font(.caption)
+
+                    Text("탭하여 앱 열기")
+                        .font(.caption)
+                        .fontWeight(.medium)
+
+                    Spacer()
+                }
+                .foregroundColor(.secondary)
             }
-            
-            Divider()
-            
-            // 복약 리스트
-            VStack(spacing: 10) {
-                ForEach(entry.medications) { item in
-                    HStack(spacing: 12) {
-                        Circle()
-                            .fill(item.statusColor)
-                            .frame(width: 10, height: 10)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.name)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            
-                            Text(item.dosage)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+            .padding(16)
+        } else {
+            VStack(alignment: .leading, spacing: 14) {
+                // 헤더
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "pills.circle.fill")
+                                .font(.title3)
+                                .foregroundColor(adherenceColor)
+
+                            Text("복약 관리")
+                                .font(.headline)
+                                .fontWeight(.bold)
                         }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(formatTime(item.scheduledTime))
-                                .font(.subheadline)
-                            
-                            Text(item.status)
+
+                        HStack(spacing: 6) {
+                            Image(systemName: "calendar")
+                                .font(.caption2)
+
+                            Text(Date(), style: .date)
                                 .font(.caption)
-                                .foregroundColor(item.statusColor)
+                        }
+                        .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    // 준수율 카드
+                    VStack(spacing: 4) {
+                        ZStack {
+                            Circle()
+                                .fill(adherenceColor.opacity(0.2))
+                                .frame(width: 60, height: 60)
+
+                            VStack(spacing: 2) {
+                                Text("\(Int(entry.adherenceRate * 100))%")
+                                    .font(.system(.title3, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(adherenceColor)
+
+                                Text("준수율")
+                                    .font(.system(size: 9))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
-                    .padding(.vertical, 4)
                 }
+
+                // 구분선
+                Rectangle()
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(height: 1)
+
+                // 복약 리스트
+                VStack(spacing: 12) {
+                    ForEach(entry.medications) { item in
+                        HStack(spacing: 12) {
+                            // 상태 아이콘
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(item.statusColor.opacity(0.15))
+                                    .frame(width: 44, height: 44)
+
+                                Image(systemName: statusIcon(for: item.status))
+                                    .font(.title3)
+                                    .foregroundColor(item.statusColor)
+                            }
+
+                            // 약물 정보
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.name)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .lineLimit(1)
+
+                                HStack(spacing: 4) {
+                                    Image(systemName: "pill")
+                                        .font(.caption2)
+
+                                    Text(item.dosage)
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            // 시간 및 상태
+                            VStack(alignment: .trailing, spacing: 4) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "clock.fill")
+                                        .font(.caption2)
+
+                                    Text(formatTime(item.scheduledTime))
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+
+                                Text(item.status)
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(item.statusColor)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(item.statusColor.opacity(0.15))
+                                    .clipShape(Capsule())
+                            }
+                        }
+                        .padding(.vertical, 6)
+                    }
+                }
+
+                Spacer()
+
+                // 하단 힌트
+                HStack {
+                    Image(systemName: "hand.tap.fill")
+                        .font(.caption)
+
+                    Text("탭하여 앱 열기")
+                        .font(.caption)
+                        .fontWeight(.medium)
+
+                    Spacer()
+
+                    Text("\(entry.medications.count)건의 복약")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.secondary.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+                .foregroundColor(.secondary)
             }
-            
-            Spacer()
-            
-            // 하단 힌트
-            HStack {
-                Image(systemName: "hand.tap.fill")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text("탭하여 앱 열기")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            .padding(16)
         }
-        .padding()
     }
-    
+
     private var adherenceColor: Color {
         if entry.adherenceRate >= 0.8 { return .green }
         else if entry.adherenceRate >= 0.5 { return .orange }
         else { return .red }
+    }
+
+    private func statusIcon(for status: String) -> String {
+        switch status {
+        case "완료": return "checkmark.circle.fill"
+        case "대기": return "clock.badge.exclamationmark"
+        default: return "exclamationmark.triangle.fill"
+        }
     }
 }
 
@@ -351,7 +660,22 @@ struct PillReminderWidget: Widget {
             provider: Provider()
         ) { entry in
             WidgetEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(for: .widget) {
+                    let adherenceColor: Color = {
+                        if entry.adherenceRate >= 0.8 { return .green }
+                        else if entry.adherenceRate >= 0.5 { return .orange }
+                        else { return .red }
+                    }()
+
+                    LinearGradient(
+                        colors: [
+                            adherenceColor.opacity(0.12),
+                            adherenceColor.opacity(0.03)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
         }
         .configurationDisplayName("복약 관리")
         .description("오늘의 복약 일정을 확인하세요")
@@ -363,7 +687,7 @@ struct PillReminderWidget: Widget {
 struct WidgetEntryView: View {
     @Environment(\.widgetFamily) var family
     let entry: MedicationEntry
-    
+
     var body: some View {
         switch family {
         case .systemSmall:
@@ -375,6 +699,12 @@ struct WidgetEntryView: View {
         default:
             SmallWidgetView(entry: entry)
         }
+    }
+
+    private var adherenceColor: Color {
+        if entry.adherenceRate >= 0.8 { return .green }
+        else if entry.adherenceRate >= 0.5 { return .orange }
+        else { return .red }
     }
 }
 

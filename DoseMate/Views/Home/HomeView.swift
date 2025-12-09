@@ -94,7 +94,28 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showAddMedicationSheet) {
                 AddMedicationView { medication in
-                    // 약물 추가 후 자동으로 리프레시됨
+                    Task {
+                        // ModelContext에 약물 추가
+                        modelContext.insert(medication)
+
+                        do {
+                            try modelContext.save()
+                            print("[HomeView] 약물 저장 완료: \(medication.name)")
+
+                            // 오늘의 복약 로그 생성
+                            DataManager.shared.generateTodayLogs()
+                            print("[HomeView] 복약 로그 생성 완료")
+
+                            // 위젯 데이터 업데이트
+                            WidgetDataUpdater.shared.updateWidgetData(context: modelContext)
+                            print("[HomeView] 위젯 데이터 업데이트 완료")
+
+                            // 데이터 리로드
+                            await viewModel.loadData()
+                        } catch {
+                            print("[HomeView] 약물 저장 실패: \(error)")
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $viewModel.showHealthMetricPrompt) {

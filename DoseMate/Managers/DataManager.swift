@@ -39,19 +39,28 @@ final class DataManager: ObservableObject {
                 Appointment.self,
                 Caregiver.self
             ])
-            
+
+            // App Group을 사용하여 위젯과 데이터 공유
+            let appGroupIdentifier = "group.com.bbdyno.app.doseMate"
+            guard let groupContainerURL = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: appGroupIdentifier
+            ) else {
+                fatalError("App Group 컨테이너를 찾을 수 없습니다. Entitlements를 확인하세요.")
+            }
+
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
-                isStoredInMemoryOnly: false,
+                url: groupContainerURL.appendingPathComponent("DoseMate.sqlite"),
                 allowsSave: true,
-                groupContainer: .automatic,
                 cloudKitDatabase: .automatic
             )
-            
+
             container = try ModelContainer(
                 for: schema,
                 configurations: [modelConfiguration]
             )
+
+            print("SwiftData 컨테이너 초기화 완료: \(groupContainerURL.path)")
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
@@ -498,11 +507,16 @@ final class DataManager: ObservableObject {
     }
     
     // MARK: - Save
-    
+
     /// 변경사항 저장
     func save() {
         do {
             try context.save()
+
+            // 위젯 데이터 업데이트
+            Task { @MainActor in
+                WidgetDataUpdater.shared.updateWidgetData()
+            }
         } catch {
             print("Failed to save context: \(error)")
         }

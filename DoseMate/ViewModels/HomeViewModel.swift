@@ -428,6 +428,11 @@ final class HomeViewModel {
 
         try? modelContext?.save()
 
+        // 위젯 데이터 업데이트 (context 전달)
+        if let context = modelContext {
+            WidgetDataUpdater.shared.updateWidgetData(context: context)
+        }
+
         await loadData()
 
         // 햅틱 피드백
@@ -442,20 +447,25 @@ final class HomeViewModel {
             showHealthMetricPrompt = true
         }
     }
-    
+
     /// 건너뛰기 처리
     func markAsSkipped(_ log: MedicationLog, reason: String? = nil) async {
         processingLogId = log.id
-        
+
         defer { processingLogId = nil }
-        
+
         log.markAsSkipped(reason: reason)
-        
+
         try? modelContext?.save()
-        
+
+        // 위젯 데이터 업데이트 (context 전달)
+        if let context = modelContext {
+            WidgetDataUpdater.shared.updateWidgetData(context: context)
+        }
+
         await loadData()
     }
-    
+
     /// 스누즈 처리
     func snooze(_ log: MedicationLog, minutes: Int) async {
         processingLogId = log.id

@@ -194,7 +194,7 @@ final class MedicationListViewModel {
             return
         }
 
-        print("✅ 약물 추가 시작: \(medication.name)")
+        print("약물 추가 시작: \(medication.name)")
         print("   - 형태: \(medication.form)")
         print("   - 색상: \(medication.color)")
         print("   - 카테고리: \(medication.category)")
@@ -202,13 +202,22 @@ final class MedicationListViewModel {
         print("   - 스케줄 수: \(medication.schedules.count)")
 
         context.insert(medication)
-        print("✅ Context에 insert 완료")
+        print("Context에 insert 완료")
 
         do {
             try context.save()
-            print("✅ Context save 완료")
+            print("Context save 완료")
+
+            // 오늘의 복약 로그 생성
+            DataManager.shared.generateTodayLogs()
+            print("복약 로그 생성 완료")
+
+            // 위젯 데이터 업데이트 (context 전달)
+            WidgetDataUpdater.shared.updateWidgetData(context: context)
+            print("위젯 데이터 업데이트 완료")
+
             await loadMedications()
-            print("✅ 약물 목록 다시 로드 완료. 현재 약물 수: \(medications.count)")
+            print("약물 목록 다시 로드 완료. 현재 약물 수: \(medications.count)")
         } catch {
             print("❌ 약물 저장 실패: \(error.localizedDescription)")
             print("   상세 오류: \(error)")
@@ -219,17 +228,22 @@ final class MedicationListViewModel {
     /// 약물 삭제
     func deleteMedication(_ medication: Medication) async {
         guard let context = modelContext else { return }
-        
+
         // 관련 알림 취소
         let schedules = medication.schedules
         for schedule in schedules {
             await NotificationManager.shared.cancelNotification(for: schedule)
         }
-        
+
         context.delete(medication)
-        
+
         do {
             try context.save()
+
+            // 위젯 데이터 업데이트 (context 전달)
+            WidgetDataUpdater.shared.updateWidgetData(context: context)
+            print("약물 삭제 후 위젯 데이터 업데이트 완료")
+
             await loadMedications()
         } catch {
             errorMessage = "약물 삭제에 실패했습니다."
@@ -253,7 +267,7 @@ final class MedicationListViewModel {
     /// 약물 활성/비활성 토글
     func toggleActive(_ medication: Medication) async {
         medication.isActive.toggle()
-        
+
         // 비활성화 시 알림 취소
         if !medication.isActive {
             let schedules = medication.schedules
@@ -261,11 +275,17 @@ final class MedicationListViewModel {
                 await NotificationManager.shared.cancelNotification(for: schedule)
             }
         }
-        
+
         try? modelContext?.save()
+
+        // 위젯 데이터 업데이트 (context 전달)
+        if let context = modelContext {
+            WidgetDataUpdater.shared.updateWidgetData(context: context)
+        }
+
         await loadMedications()
     }
-    
+
     /// 재고 업데이트
     func updateStock(_ medication: Medication, amount: Int) async {
         if amount > 0 {
@@ -273,7 +293,7 @@ final class MedicationListViewModel {
         } else {
             medication.decreaseStock(by: abs(amount))
         }
-        
+
         // 재고 부족 알림 확인
         if medication.isLowStock {
             do {
@@ -282,11 +302,17 @@ final class MedicationListViewModel {
                 print("재고 부족 알림 전송 실패: \(error)")
             }
         }
-        
+
         try? modelContext?.save()
+
+        // 위젯 데이터 업데이트 (context 전달)
+        if let context = modelContext {
+            WidgetDataUpdater.shared.updateWidgetData(context: context)
+        }
+
         await loadMedications()
     }
-    
+
     // MARK: - Search
     
     /// 검색 초기화

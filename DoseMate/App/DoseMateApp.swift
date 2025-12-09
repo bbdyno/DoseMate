@@ -22,7 +22,10 @@ struct DoseMateApp: App {
     
     /// SwiftData 모델 컨테이너
     let modelContainer: ModelContainer
-    
+
+    /// Scene Phase
+    @Environment(\.scenePhase) private var scenePhase
+
     // MARK: - Initialization
     
     init() {
@@ -37,27 +40,39 @@ struct DoseMateApp: App {
             Patient.self
         ])
         
-        // 💎 iCloud 동기화 설정 (프리미엄 + 사용자 설정에 따라)
+        // iCloud 동기화 설정 (프리미엄 + 사용자 설정에 따라)
         let shouldEnableCloudKit = Self.shouldEnableCloudSync()
-        
+
+        // App Group을 사용하여 위젯과 데이터 공유
+        let appGroupIdentifier = "group.com.bbdyno.app.doseMate"
+        guard let groupContainerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupIdentifier
+        ) else {
+            fatalError("App Group 컨테이너를 찾을 수 없습니다. Entitlements를 확인하세요.")
+        }
+
         let modelConfiguration: ModelConfiguration
         if shouldEnableCloudKit {
             // iCloud 동기화 활성화
             modelConfiguration = ModelConfiguration(
                 schema: schema,
-                isStoredInMemoryOnly: false,
+                url: groupContainerURL.appendingPathComponent("DoseMate.sqlite"),
+                allowsSave: true,
                 cloudKitDatabase: .automatic
             )
-            print("☁️ iCloud 동기화 활성화됨")
+            print("iCloud 동기화 활성화됨")
         } else {
             // 로컬 전용
             modelConfiguration = ModelConfiguration(
                 schema: schema,
-                isStoredInMemoryOnly: false,
+                url: groupContainerURL.appendingPathComponent("DoseMate.sqlite"),
+                allowsSave: true,
                 cloudKitDatabase: .none
             )
-            print("📱 로컬 전용 모드")
+            print("로컬 전용 모드")
         }
+
+        print("SwiftData 컨테이너 초기화: \(groupContainerURL.path)")
         
         do {
             modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -77,11 +92,17 @@ struct DoseMateApp: App {
                 .preferredColorScheme(colorScheme)
                 .onAppear {
                     setupNotifications()
+                    updateWidgetData()
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .background {
+                        updateWidgetData()
+                    }
                 }
         }
         .modelContainer(modelContainer)
     }
-    
+
     // MARK: - Computed Properties
     
     private var colorScheme: ColorScheme? {
@@ -107,9 +128,9 @@ struct DoseMateApp: App {
         let isICloudAvailable = FileManager.default.ubiquityIdentityToken != nil
         
         #if DEBUG
-        print("💎 프리미엄 (캐시): \(isPremiumCached)")
-        print("☁️ iCloud 설정: \(iCloudSyncEnabled)")
-        print("☁️ iCloud 가용: \(isICloudAvailable)")
+        print("프리미엄 (캐시): \(isPremiumCached)")
+        print("iCloud 설정: \(iCloudSyncEnabled)")
+        print("iCloud 가용: \(isICloudAvailable)")
         #endif
         
         return isPremiumCached && iCloudSyncEnabled && isICloudAvailable
@@ -145,6 +166,14 @@ struct DoseMateApp: App {
             } catch {
                 print("알림 권한 요청 실패: \(error)")
             }
+        }
+    }
+
+    /// 위젯 데이터 업데이트
+    private func updateWidgetData() {
+        Task { @MainActor in
+            // DataManager의 context 사용 (앱 시작 시)
+            WidgetDataUpdater.shared.updateWidgetData(context: modelContainer.mainContext)
         }
     }
 }
