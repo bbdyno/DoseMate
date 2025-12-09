@@ -22,7 +22,9 @@ struct AppointmentListView: View {
             if !upcomingAppointments.isEmpty {
                 Section(DoseMateStrings.Appointments.upcomingSection) {
                     ForEach(upcomingAppointments) { appointment in
-                        AppointmentRow(appointment: appointment)
+                        AppointmentCard(appointment: appointment)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .listRowBackground(Color.clear)
                             .swipeActions {
                                 Button(role: .destructive) {
                                     modelContext.delete(appointment)
@@ -30,7 +32,7 @@ struct AppointmentListView: View {
                                 } label: {
                                     Label(DoseMateStrings.Appointments.delete, systemImage: "trash")
                                 }
-                                
+
                                 Button {
                                     appointment.markAsCompleted()
                                     try? modelContext.save()
@@ -42,11 +44,13 @@ struct AppointmentListView: View {
                     }
                 }
             }
-            
+
             if !pastAppointments.isEmpty {
                 Section(DoseMateStrings.Appointments.pastSection) {
                     ForEach(pastAppointments) { appointment in
-                        AppointmentRow(appointment: appointment)
+                        AppointmentCard(appointment: appointment)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .listRowBackground(Color.clear)
                             .swipeActions {
                                 Button(role: .destructive) {
                                     modelContext.delete(appointment)
@@ -60,6 +64,7 @@ struct AppointmentListView: View {
             }
         }
         .navigationTitle(DoseMateStrings.Appointments.title)
+        .toolbarBackground(.clear, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

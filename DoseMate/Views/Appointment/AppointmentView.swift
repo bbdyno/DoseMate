@@ -24,21 +24,40 @@ struct AppointmentView: View {
     
     var body: some View {
         NavigationStack {
-            Group {
+            ZStack {
+                // 배경 그라데이션
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.05),
+                        Color.purple.opacity(0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
                 if appointments.isEmpty {
                     emptyStateView
                 } else {
                     appointmentList
                 }
             }
-            .background(Color.appBackground)
             .navigationTitle("진료 예약")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showAddSheet = true
                     } label: {
-                        Image(systemName: "plus")
+                        ZStack {
+                            Circle()
+                                .fill(Color.blue.gradient)
+                                .frame(width: 36, height: 36)
+
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                        }
                     }
                 }
             }
@@ -68,28 +87,62 @@ struct AppointmentView: View {
     // MARK: - Empty State
     
     private var emptyStateView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "calendar.badge.clock")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            
-            Text("등록된 예약이 없습니다")
-                .font(.title3)
-                .fontWeight(.medium)
-            
-            Text("진료 예약을 추가하여\n알림을 받아보세요")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            
+        VStack(spacing: 24) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.2), Color.purple.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+
+                Image(systemName: "calendar.badge.clock")
+                    .font(.system(size: 50))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+
+            VStack(spacing: 8) {
+                Text("등록된 예약이 없습니다")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+
+                Text("진료 예약을 추가하여\n알림을 받아보세요")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
             Button {
                 showAddSheet = true
             } label: {
-                Label("예약 추가", systemImage: "plus")
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle.fill")
+                    Text("예약 추가")
+                        .fontWeight(.semibold)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(
+                        colors: [.blue, .purple],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .clipShape(Capsule())
+                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
             }
-            .buttonStyle(.borderedProminent)
+            .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -97,139 +150,192 @@ struct AppointmentView: View {
     // MARK: - Appointment List
     
     private var appointmentList: some View {
-        List {
-            // 다가오는 예약
-            let upcoming = appointments.filter { $0.isUpcoming }
-            if !upcoming.isEmpty {
-                Section("다가오는 예약") {
-                    ForEach(upcoming) { appointment in
-                        AppointmentRow(appointment: appointment)
-                            .onTapGesture {
-                                selectedAppointment = appointment
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    appointmentToDelete = appointment
-                                    showDeleteConfirmation = true
-                                } label: {
-                                    Label("삭제", systemImage: "trash")
+        ScrollView {
+            VStack(spacing: 16) {
+                // 다가오는 예약
+                let upcoming = appointments.filter { $0.isUpcoming }
+                if !upcoming.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("다가오는 예약")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal)
+
+                        ForEach(upcoming) { appointment in
+                            AppointmentCard(appointment: appointment)
+                                .onTapGesture {
+                                    selectedAppointment = appointment
                                 }
-                                
-                                if !appointment.isCompleted {
-                                    Button {
-                                        appointment.markAsCompleted()
-                                        try? modelContext.save()
-                                    } label: {
-                                        Label("완료", systemImage: "checkmark")
+                                .contextMenu {
+                                    if !appointment.isCompleted {
+                                        Button {
+                                            appointment.markAsCompleted()
+                                            try? modelContext.save()
+                                        } label: {
+                                            Label("완료로 표시", systemImage: "checkmark.circle")
+                                        }
                                     }
-                                    .tint(.green)
+
+                                    Button(role: .destructive) {
+                                        appointmentToDelete = appointment
+                                        showDeleteConfirmation = true
+                                    } label: {
+                                        Label("삭제", systemImage: "trash")
+                                    }
                                 }
-                            }
+                        }
+                    }
+                }
+
+                // 지난 예약
+                let past = appointments.filter { $0.isPast }
+                if !past.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("지난 예약")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal)
+
+                        ForEach(past) { appointment in
+                            AppointmentCard(appointment: appointment)
+                                .onTapGesture {
+                                    selectedAppointment = appointment
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        appointmentToDelete = appointment
+                                        showDeleteConfirmation = true
+                                    } label: {
+                                        Label("삭제", systemImage: "trash")
+                                    }
+                                }
+                        }
                     }
                 }
             }
-            
-            // 지난 예약
-            let past = appointments.filter { $0.isPast }
-            if !past.isEmpty {
-                Section("지난 예약") {
-                    ForEach(past) { appointment in
-                        AppointmentRow(appointment: appointment)
-                            .onTapGesture {
-                                selectedAppointment = appointment
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    appointmentToDelete = appointment
-                                    showDeleteConfirmation = true
-                                } label: {
-                                    Label("삭제", systemImage: "trash")
-                                }
-                            }
-                    }
-                }
-            }
+            .padding(.vertical)
         }
-        .listStyle(.insetGrouped)
     }
 }
 
-// MARK: - Appointment Row
+// MARK: - Appointment Card
 
-struct AppointmentRow: View {
+struct AppointmentCard: View {
     let appointment: Appointment
-    
+
     var body: some View {
-        HStack(spacing: 12) {
-            // 날짜 표시
-            VStack(spacing: 2) {
+        HStack(spacing: 16) {
+            // 날짜 박스
+            VStack(spacing: 4) {
                 Text(dayText)
                     .font(.caption2)
-                    .foregroundColor(.secondary)
-                
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+
                 Text("\(Calendar.current.component(.day, from: appointment.appointmentDate))")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(appointment.isToday ? .blue : .primary)
-                
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(
+                        appointment.isToday
+                            ? LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [.primary], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+
                 Text(monthText)
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 50)
-            
-            Divider()
-            
+            .frame(width: 60)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(appointment.isToday ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
+            )
+
             // 예약 정보
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(appointment.doctorName)
-                        .fontWeight(.medium)
-                    
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.primary)
+
                     if appointment.isCompleted {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.green)
+                    }
+
+                    Spacer()
+
+                    // 남은 시간
+                    if appointment.isUpcoming, let text = appointment.timeRemainingText {
+                        Text(text)
                             .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(appointment.isToday ? .blue : .secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(appointment.isToday ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
+                            )
                     }
                 }
-                
+
                 if let specialty = appointment.specialty, !specialty.isEmpty {
                     Text(specialty)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                
-                HStack(spacing: 8) {
-                    Label(formatTime(appointment.appointmentDate), systemImage: "clock")
-                    
+
+                HStack(spacing: 12) {
+                    Label {
+                        Text(formatTime(appointment.appointmentDate))
+                    } icon: {
+                        Image(systemName: "clock.fill")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
                     if let location = appointment.location, !location.isEmpty {
-                        Label(location, systemImage: "mappin")
+                        Label {
+                            Text(location)
+                        } icon: {
+                            Image(systemName: "mappin.circle.fill")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     }
                 }
-                .font(.caption)
-                .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            // 남은 시간
-            if appointment.isUpcoming, let text = appointment.timeRemainingText {
-                Text(text)
-                    .font(.caption)
-                    .foregroundColor(appointment.isToday ? .blue : .secondary)
             }
         }
-        .padding(.vertical, 4)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(
+                    appointment.isToday
+                        ? LinearGradient(colors: [.blue.opacity(0.3), .purple.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        : LinearGradient(colors: [.clear], startPoint: .topLeading, endPoint: .bottomTrailing),
+                    lineWidth: 1
+                )
+        )
+        .padding(.horizontal)
         .opacity(appointment.isCompleted ? 0.6 : 1)
     }
-    
+
     private var dayText: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "E"
         return formatter.string(from: appointment.appointmentDate)
     }
-    
+
     private var monthText: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -242,9 +348,9 @@ struct AppointmentRow: View {
 
 struct AddAppointmentView: View {
     @Environment(\.dismiss) private var dismiss
-    
+
     let onSave: (Appointment) -> Void
-    
+
     @State private var doctorName = ""
     @State private var specialty = ""
     @State private var appointmentDate = Date()
@@ -252,66 +358,204 @@ struct AddAppointmentView: View {
     @State private var notes = ""
     @State private var notificationEnabled = true
     @State private var notificationMinutesBefore = 60
-    
+
     var body: some View {
         NavigationStack {
-            Form {
-                Section("기본 정보") {
-                    TextField("의사 이름 *", text: $doctorName)
-                    TextField("진료과", text: $specialty)
-                }
-                
-                Section("예약 일시") {
-                    DatePicker(
-                        "날짜 및 시간",
-                        selection: $appointmentDate,
-                        in: Date()...,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
-                }
-                
-                Section("장소") {
-                    TextField("병원/위치", text: $location)
-                }
-                
-                Section("알림") {
-                    Toggle("알림 받기", isOn: $notificationEnabled)
-                    
-                    if notificationEnabled {
-                        Picker("알림 시간", selection: $notificationMinutesBefore) {
-                            Text("정각에").tag(0)
-                            Text("30분 전").tag(30)
-                            Text("1시간 전").tag(60)
-                            Text("2시간 전").tag(120)
-                            Text("1일 전").tag(1440)
+            ZStack {
+                // 배경 그라데이션
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.05),
+                        Color.purple.opacity(0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 헤더 아이콘
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.blue.opacity(0.2), Color.purple.opacity(0.2)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 80, height: 80)
+
+                            Image(systemName: "calendar.badge.plus")
+                                .font(.system(size: 35))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.blue, .purple],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
                         }
+                        .padding(.top, 8)
+
+                        VStack(spacing: 16) {
+                            // 기본 정보
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeaderView(title: "기본 정보", icon: "person.text.rectangle")
+
+                                VStack(spacing: 12) {
+                                    ModernTextField(
+                                        icon: "stethoscope",
+                                        placeholder: "의사 이름 *",
+                                        text: $doctorName
+                                    )
+
+                                    ModernTextField(
+                                        icon: "cross.case",
+                                        placeholder: "진료과",
+                                        text: $specialty
+                                    )
+                                }
+                            }
+
+                            // 예약 일시
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeaderView(title: "예약 일시", icon: "calendar.circle")
+
+                                DatePicker(
+                                    "",
+                                    selection: $appointmentDate,
+                                    in: Date()...,
+                                    displayedComponents: [.date, .hourAndMinute]
+                                )
+                                .datePickerStyle(.graphical)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(.background)
+                                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                                )
+                            }
+
+                            // 장소
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeaderView(title: "장소", icon: "mappin.circle")
+
+                                ModernTextField(
+                                    icon: "building.2",
+                                    placeholder: "병원/위치",
+                                    text: $location
+                                )
+                            }
+
+                            // 알림
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeaderView(title: "알림", icon: "bell.badge")
+
+                                VStack(spacing: 12) {
+                                    HStack {
+                                        Image(systemName: "bell.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundStyle(.blue)
+                                            .frame(width: 24)
+
+                                        Text("알림 받기")
+                                            .font(.subheadline)
+
+                                        Spacer()
+
+                                        Toggle("", isOn: $notificationEnabled)
+                                            .labelsHidden()
+                                    }
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(.background)
+                                            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                                    )
+
+                                    if notificationEnabled {
+                                        Picker("알림 시간", selection: $notificationMinutesBefore) {
+                                            Text("정각에").tag(0)
+                                            Text("30분 전").tag(30)
+                                            Text("1시간 전").tag(60)
+                                            Text("2시간 전").tag(120)
+                                            Text("1일 전").tag(1440)
+                                        }
+                                        .pickerStyle(.menu)
+                                        .padding()
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(.background)
+                                                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // 메모
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeaderView(title: "메모", icon: "note.text")
+
+                                TextField("추가 메모를 입력하세요", text: $notes, axis: .vertical)
+                                    .lineLimit(3...5)
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(.background)
+                                            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                                    )
+                            }
+                        }
+                        .padding(.horizontal)
+
+                        // 저장 버튼
+                        Button {
+                            saveAppointment()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("예약 저장")
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                LinearGradient(
+                                    colors: doctorName.isEmpty ? [.gray] : [.blue, .purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: doctorName.isEmpty ? .clear : .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                        }
+                        .disabled(doctorName.isEmpty)
+                        .padding(.horizontal)
+                        .padding(.bottom)
                     }
-                }
-                
-                Section("메모") {
-                    TextField("추가 메모", text: $notes, axis: .vertical)
-                        .lineLimit(3...5)
                 }
             }
             .navigationTitle("예약 추가")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("취소") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.secondary)
                     }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("저장") {
-                        saveAppointment()
-                    }
-                    .disabled(doctorName.isEmpty)
                 }
             }
         }
     }
-    
+
     private func saveAppointment() {
         let appointment = Appointment(
             doctorName: doctorName,
@@ -322,16 +566,16 @@ struct AddAppointmentView: View {
         )
         appointment.notificationEnabled = notificationEnabled
         appointment.notificationMinutesBefore = notificationMinutesBefore
-        
+
         onSave(appointment)
-        
+
         // 알림 설정
         if notificationEnabled {
             Task {
                 try? await NotificationManager.shared.scheduleAppointmentNotification(for: appointment)
             }
         }
-        
+
         dismiss()
     }
 }
@@ -341,83 +585,269 @@ struct AddAppointmentView: View {
 struct AppointmentDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     let appointment: Appointment
-    
+
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    HStack {
-                        Text("의사")
-                        Spacer()
-                        Text(appointment.doctorName)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    if let specialty = appointment.specialty {
-                        HStack {
-                            Text("진료과")
-                            Spacer()
-                            Text(specialty)
-                                .foregroundColor(.secondary)
+            ZStack {
+                // 배경 그라데이션
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.05),
+                        Color.purple.opacity(0.05)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 헤더 카드
+                        VStack(spacing: 16) {
+                            // 날짜 표시
+                            VStack(spacing: 8) {
+                                Text("\(Calendar.current.component(.day, from: appointment.appointmentDate))")
+                                    .font(.system(size: 48, weight: .bold))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.blue, .purple],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+
+                                Text(appointment.dateDisplayText)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.top, 8)
+
+                            Divider()
+
+                            // 의사 정보
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Image(systemName: "stethoscope")
+                                        .font(.title3)
+                                        .foregroundStyle(.blue)
+
+                                    Text(appointment.doctorName)
+                                        .font(.title3)
+                                        .fontWeight(.semibold)
+
+                                    if appointment.isCompleted {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(.green)
+                                    }
+                                }
+
+                                if let specialty = appointment.specialty, !specialty.isEmpty {
+                                    Text(specialty)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.background)
+                                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
+                        )
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+
+                        // 상세 정보
+                        VStack(spacing: 12) {
+                            DetailRow(
+                                icon: "clock.fill",
+                                title: "시간",
+                                value: formatTime(appointment.appointmentDate),
+                                color: .blue
+                            )
+
+                            if let location = appointment.location, !location.isEmpty {
+                                DetailRow(
+                                    icon: "mappin.circle.fill",
+                                    title: "장소",
+                                    value: location,
+                                    color: .green
+                                )
+                            }
+
+                            if appointment.isUpcoming, let timeRemaining = appointment.timeRemainingText {
+                                DetailRow(
+                                    icon: "hourglass",
+                                    title: "남은 시간",
+                                    value: timeRemaining,
+                                    color: .orange
+                                )
+                            }
+                        }
+                        .padding(.horizontal)
+
+                        // 메모
+                        if let notes = appointment.notes, !notes.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Image(systemName: "note.text")
+                                        .foregroundStyle(.blue)
+                                    Text("메모")
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
+                                }
+
+                                Text(notes)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(.background)
+                                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                            )
+                            .padding(.horizontal)
+                        }
+
+                        // 완료 버튼
+                        if !appointment.isCompleted {
+                            Button {
+                                withAnimation {
+                                    appointment.markAsCompleted()
+                                    try? modelContext.save()
+                                }
+                                dismiss()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                    Text("완료로 표시")
+                                        .fontWeight(.semibold)
+                                }
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(
+                                    LinearGradient(
+                                        colors: [.green, .blue],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
                         }
                     }
-                }
-                
-                Section {
-                    HStack {
-                        Text("날짜")
-                        Spacer()
-                        Text(appointment.dateDisplayText)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("시간")
-                        Spacer()
-                        Text(formatTime(appointment.appointmentDate))
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    if let location = appointment.location {
-                        HStack {
-                            Text("장소")
-                            Spacer()
-                            Text(location)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                
-                if let notes = appointment.notes, !notes.isEmpty {
-                    Section("메모") {
-                        Text(notes)
-                    }
-                }
-                
-                if !appointment.isCompleted {
-                    Section {
-                        Button {
-                            appointment.markAsCompleted()
-                            try? modelContext.save()
-                            dismiss()
-                        } label: {
-                            Label("완료로 표시", systemImage: "checkmark.circle")
-                        }
-                    }
+                    .padding(.bottom)
                 }
             }
             .navigationTitle("예약 상세")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("닫기") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
         }
+    }
+}
+
+// MARK: - Detail Row
+
+struct DetailRow: View {
+    let icon: String
+    let title: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundStyle(color)
+                .frame(width: 32, height: 32)
+                .background(
+                    Circle()
+                        .fill(color.opacity(0.1))
+                )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(value)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+    }
+}
+
+// MARK: - Modern TextField
+
+struct ModernTextField: View {
+    let icon: String
+    let placeholder: String
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundStyle(.blue)
+                .frame(width: 24)
+
+            TextField(placeholder, text: $text)
+                .font(.subheadline)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+    }
+}
+
+// MARK: - Section Header View
+
+struct SectionHeaderView: View {
+    let title: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(.blue)
+            Text(title)
+                .font(.headline)
+                .fontWeight(.semibold)
+        }
+        .padding(.horizontal, 4)
     }
 }
 
