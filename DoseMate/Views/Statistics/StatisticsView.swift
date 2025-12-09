@@ -96,27 +96,27 @@ struct StatisticsView: View {
                     Text("\(takenCount)")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.green)
+                        .foregroundColor(AppColors.success)
                     Text("복용")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack {
                     Text("\(delayedCount)")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.orange)
+                        .foregroundColor(AppColors.warning)
                     Text("지연")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 VStack {
                     Text("\(skippedCount)")
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.red)
+                        .foregroundColor(AppColors.danger)
                     Text("건너뜀")
                         .font(.caption)
                         .foregroundColor(.secondary)

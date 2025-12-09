@@ -7,6 +7,22 @@
 
 import SwiftUI
 
+// MARK: - Color Helpers
+
+extension Color {
+    /// 라이트/다크 모드에 따라 자동으로 변경되는 색상 생성
+    static func adaptive(light: Color, dark: Color) -> Color {
+        return Color(UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(dark)
+            default:
+                return UIColor(light)
+            }
+        })
+    }
+}
+
 // MARK: - App Colors
 
 /// 앱 컬러 팔레트 (하늘색 테마)
@@ -21,9 +37,12 @@ struct AppColors {
     
     /// 진한 하늘색
     static let primaryDark = Color(hex: "2E6BB0")
-    
-    /// 아주 연한 하늘색 (배경용)
-    static let primarySoft = Color(hex: "E8F4FD")
+
+    /// 아주 연한 하늘색 (배경용, 다크모드 대응)
+    static let primarySoft = Color.adaptive(
+        light: Color(hex: "E8F4FD"),
+        dark: Color(hex: "1A2F47")
+    )
     
     // MARK: - Secondary (보조색)
     
@@ -54,19 +73,40 @@ struct AppColors {
     static let info = Color(hex: "64B5F6")
     
     // MARK: - Neutral Colors
-    
-    /// 텍스트 색상
-    static let textPrimary = Color(hex: "1A2B4A")
-    static let textSecondary = Color(hex: "6B7D99")
-    static let textTertiary = Color(hex: "9CADC4")
-    
-    /// 배경 색상
-    static let background = Color(hex: "F5F9FC")
-    static let cardBackground = Color.white
-    static let surfaceElevated = Color(hex: "FFFFFF")
-    
-    /// 구분선
-    static let divider = Color(hex: "E5EBF1")
+
+    /// 텍스트 색상 (다크모드 대응)
+    static let textPrimary = Color.adaptive(
+        light: Color(hex: "1A2B4A"),
+        dark: Color(hex: "F0F0F0")
+    )
+    static let textSecondary = Color.adaptive(
+        light: Color(hex: "6B7D99"),
+        dark: Color(hex: "A8B4C8")
+    )
+    static let textTertiary = Color.adaptive(
+        light: Color(hex: "9CADC4"),
+        dark: Color(hex: "6B7D99")
+    )
+
+    /// 배경 색상 (다크모드 대응)
+    static let background = Color.adaptive(
+        light: Color(hex: "F5F9FC"),
+        dark: Color(hex: "0A0E14")
+    )
+    static let cardBackground = Color.adaptive(
+        light: Color.white,
+        dark: Color(hex: "1A1F28")
+    )
+    static let surfaceElevated = Color.adaptive(
+        light: Color(hex: "FFFFFF"),
+        dark: Color(hex: "1E2430")
+    )
+
+    /// 구분선 (다크모드 대응)
+    static let divider = Color.adaptive(
+        light: Color(hex: "E5EBF1"),
+        dark: Color(hex: "2A3140")
+    )
     
     // MARK: - Gradients
     
@@ -91,9 +131,12 @@ struct AppColors {
         endPoint: .bottomTrailing
     )
     
-    /// 카드 그라데이션 (미묘한)
+    /// 카드 그라데이션 (미묘한, 다크모드 대응)
     static let cardGradient = LinearGradient(
-        colors: [Color.white, Color(hex: "F8FBFD")],
+        colors: [
+            Color.adaptive(light: Color.white, dark: Color(hex: "1A1F28")),
+            Color.adaptive(light: Color(hex: "F8FBFD"), dark: Color(hex: "151A22"))
+        ],
         startPoint: .top,
         endPoint: .bottom
     )
@@ -151,17 +194,18 @@ struct AppRadius {
 // MARK: - Card Style Modifier
 
 struct CardStyle: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
     var padding: CGFloat = AppSpacing.md
     var cornerRadius: CGFloat = AppRadius.lg
     var shadow: Bool = true
-    
+
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .background(AppColors.cardBackground)
             .cornerRadius(cornerRadius)
             .shadow(
-                color: shadow ? Color.black.opacity(0.06) : .clear,
+                color: shadow ? (colorScheme == .dark ? Color.black.opacity(0.3) : Color.black.opacity(0.06)) : .clear,
                 radius: 12,
                 x: 0,
                 y: 4

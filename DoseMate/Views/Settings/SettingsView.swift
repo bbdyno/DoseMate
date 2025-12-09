@@ -249,13 +249,13 @@ struct SettingsView: View {
                         .font(.title2)
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.yellow, .orange],
+                                colors: [AppColors.lemon, AppColors.peach],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 32)
-                    
+
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
                             Text(storeManager.isPremium ? DoseMateStrings.Settings.premiumActive : DoseMateStrings.Settings.premiumUpgradeTitle)
@@ -265,10 +265,10 @@ struct SettingsView: View {
                             if storeManager.isPremium {
                                 Text(DoseMateStrings.Settings.premiumInUse)
                                     .font(.caption)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(AppColors.success)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(Color.green.opacity(0.15))
+                                    .background(AppColors.success.opacity(0.15))
                                     .cornerRadius(4)
                             }
                         }
@@ -290,10 +290,10 @@ struct SettingsView: View {
             .listRowBackground(
                 Group {
                     if storeManager.isPremium {
-                        Color.green.opacity(0.1)
+                        AppColors.success.opacity(0.1)
                     } else {
                         LinearGradient(
-                            colors: [Color.yellow.opacity(0.1), Color.orange.opacity(0.1)],
+                            colors: [AppColors.lemon.opacity(0.1), AppColors.peach.opacity(0.1)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
