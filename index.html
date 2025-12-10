@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoseMate - Privacy-First Medication Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+        
+        /* Language specific fonts */
+        body[lang="ko"] { font-family: 'Noto Sans KR', sans-serif; }
+        body[lang="ja"] { font-family: 'Noto Sans JP', sans-serif; }
+        body[lang="zh"] { font-family: 'Noto Sans SC', sans-serif; }
+        body[lang="ar"] { font-family: 'Noto Sans Arabic', sans-serif; }
+
+        .gradient-text {
+            background: linear-gradient(to right, #2563EB, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-bg {
+            background-color: #F3F4F6;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23E5E7EB' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* RTL Support */
+        [dir="rtl"] .fa-chevron-right { transform: rotate(180deg); }
+        [dir="rtl"] .ml-2 { margin-left: 0; margin-right: 0.5rem; }
+        [dir="rtl"] .mr-2 { margin-right: 0; margin-left: 0.5rem; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased">
+
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md fixed w-full z-50 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <i class="fa-solid fa-pills text-blue-600 text-2xl"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">DoseMate</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex space-x-6">
+                        <a href="#features" class="text-gray-600 hover:text-blue-600 transition" data-i18n="nav_features">Features</a>
+                        <a href="#support" class="text-gray-600 hover:text-blue-600 transition" data-i18n="nav_support">Support</a>
+                    </div>
+                    
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <select id="langSelect" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-8 appearance-none cursor-pointer">
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ko">🇰🇷 한국어</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="zh">🇨🇳 中文</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="id">🇮🇩 Indonesia</option>
+                            <option value="ar">🇸🇦 العربية</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-bg pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="inline-flex items-center px-3 py-1 rounded-full border border-blue-100 bg-blue-50 text-blue-600 text-sm font-medium mb-6">
+                    <span class="flex h-2 w-2 rounded-full bg-blue-600 mr-2"></span>
+                    <span data-i18n="hero_badge">Coming Soon to App Store</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
+                    <span data-i18n="hero_title_1">Your Health Data,</span><br>
+                    <span class="gradient-text" data-i18n="hero_title_2">Only Yours.</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-2" data-i18n="hero_subtitle">
+                    The Privacy-First Medication Tracker for You and Your Family.
+                </p>
+                <p class="text-lg text-gray-500 mb-10 font-light" data-i18n="hero_desc">
+                    No Servers. No Sign-ups. 100% Offline.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button disabled class="px-8 py-4 bg-gray-900 text-white rounded-xl font-semibold shadow-lg opacity-75 cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-apple text-xl"></i>
+                        <span data-i18n="btn_appstore">Download on App Store</span>
+                    </button>
+                    <a href="#support" class="px-8 py-4 bg-white text-gray-900 border border-gray-200 rounded-xl font-semibold shadow-sm hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-heart text-red-500"></i>
+                        <span data-i18n="btn_support">Support Development</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4" data-i18n="features_title">Why DoseMate?</h2>
+                <p class="text-lg text-gray-600" data-i18n="features_subtitle">Designed for simplicity, built for privacy.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition duration-300">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6 text-blue-600">
+                        <i class="fa-solid fa-user-shield text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3" data-i18n="feat_privacy_title">Privacy First</h3>
+                    <p class="text-gray-600" data-i18n="feat_privacy_desc">100% Offline. No sign-ups, no servers. Your data never leaves your device.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition duration-300">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6 text-green-600">
+                        <i class="fa-solid fa-users text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3" data-i18n="feat_family_title">Family Care</h3>
+                    <p class="text-gray-600" data-i18n="feat_family_desc">Manage medications for yourself, children, parents, and pets in one place.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition duration-300">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6 text-purple-600">
+                        <i class="fa-solid fa-bell text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3" data-i18n="feat_reminders_title">Smart Reminders</h3>
+                    <p class="text-gray-600" data-i18n="feat_reminders_desc">Flexible schedules and inventory tracking to ensure you never miss a dose.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition duration-300">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6 text-red-600">
+                        <i class="fa-solid fa-heart-pulse text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3" data-i18n="feat_health_title">Health Integration</h3>
+                    <p class="text-gray-600" data-i18n="feat_health_desc">Syncs seamlessly with Apple Health. Track blood pressure, glucose, and more.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition duration-300">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-6 text-yellow-600">
+                        <i class="fa-solid fa-globe text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3" data-i18n="feat_global_title">Global Support</h3>
+                    <p class="text-gray-600" data-i18n="feat_global_desc">Available in 9 languages including English, Korean, Spanish, and Arabic.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Section -->
+    <section id="support" class="py-20 bg-gray-900 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-6" data-i18n="support_title">Support the Developer</h2>
+            <p class="text-gray-400 mb-10 text-lg">
+                <span data-i18n="support_desc">DoseMate is an independent project. Your support keeps the updates coming!</span>
+            </p>
+
+            <!-- Buy Me A Coffee -->
+            <div class="mb-12">
+                <a href="https://buymeacoffee.com/bbdyno" target="_blank" class="inline-block transform hover:scale-105 transition duration-300">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" width="217" />
+                </a>
+            </div>
+
+            <!-- Crypto Donation -->
+            <div class="bg-gray-800 rounded-2xl p-8 max-w-2xl mx-auto border border-gray-700">
+                <h3 class="text-xl font-semibold mb-6 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-coins text-yellow-500"></i> Crypto Donation
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- BTC -->
+                    <div class="flex flex-col items-center">
+                        <div class="bg-white p-2 rounded-lg mb-4">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=bc1qz5neag5j4cg6j8sj53889udws70v7223zlvgd3" alt="BTC QR" class="w-32 h-32">
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-brands fa-bitcoin text-yellow-500 text-xl"></i>
+                            <span class="font-bold">Bitcoin</span>
+                        </div>
+                        <code class="text-xs bg-gray-900 px-3 py-2 rounded text-gray-400 break-all select-all">bc1qz5neag5j4cg6j8sj53889udws70v7223zlvgd3</code>
+                    </div>
+
+                    <!-- ETH -->
+                    <div class="flex flex-col items-center">
+                        <div class="bg-white p-2 rounded-lg mb-4">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x5f35523757d0e672fa3ffbc0f1d50d35fd6b2571" alt="ETH QR" class="w-32 h-32">
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fa-brands fa-ethereum text-purple-400 text-xl"></i>
+                            <span class="font-bold">Ethereum</span>
+                        </div>
+                        <code class="text-xs bg-gray-900 px-3 py-2 rounded text-gray-400 break-all select-all">0x5f35523757d0e672fa3ffbc0f1d50d35fd6b2571</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-100 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i class="fa-solid fa-pills text-blue-600"></i>
+                <span class="font-bold text-gray-900">DoseMate</span>
+            </div>
+            <div class="text-gray-500 text-sm">
+                &copy; 2025 DoseMate. All rights reserved.
+            </div>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="https://github.com/bbdyno" target="_blank" class="text-gray-400 hover:text-gray-900 text-xl"><i class="fa-brands fa-github"></i></a>
+                <a href="mailto:della.kimko@gmail.com" class="text-gray-400 hover:text-gray-900 text-xl"><i class="fa-solid fa-envelope"></i></a>
+                <a href="TERMS_OF_SERVICE.md" class="text-gray-400 hover:text-gray-900 text-sm" data-i18n="footer_terms">Terms</a>
+                <a href="PRIVACY_POLICY.md" class="text-gray-400 hover:text-gray-900 text-sm" data-i18n="footer_privacy">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const translations = {
+            en: {
+                nav_features: "Features",
+                nav_support: "Support",
+                hero_badge: "Coming Soon to App Store",
+                hero_title_1: "Your Health Data,",
+                hero_title_2: "Only Yours.",
+                hero_subtitle: "The Privacy-First Medication Tracker for You and Your Family.",
+                hero_desc: "No Servers. No Sign-ups. 100% Offline.",
+                btn_appstore: "Download on App Store",
+                btn_support: "Support Development",
+                features_title: "Why DoseMate?",
+                features_subtitle: "Designed for simplicity, built for privacy.",
+                feat_privacy_title: "Privacy First",
+                feat_privacy_desc: "100% Offline. No sign-ups, no servers. Your data never leaves your device.",
+                feat_family_title: "Family Care",
+                feat_family_desc: "Manage medications for yourself, children, parents, and pets in one place.",
+                feat_reminders_title: "Smart Reminders",
+                feat_reminders_desc: "Flexible schedules and inventory tracking to ensure you never miss a dose.",
+                feat_health_title: "Health Integration",
+                feat_health_desc: "Syncs seamlessly with Apple Health. Track blood pressure, glucose, and more.",
+                feat_global_title: "Global Support",
+                feat_global_desc: "Available in 9 languages including English, Korean, Spanish, and Arabic.",
+                support_title: "Support the Developer",
+                support_desc: "DoseMate is an independent project. Your support keeps the updates coming!",
+                footer_terms: "Terms",
+                footer_privacy: "Privacy"
+            },
+            ko: {
+                nav_features: "주요 기능",
+                nav_support: "후원하기",
+                hero_badge: "App Store 출시 예정",
+                hero_title_1: "당신의 건강 데이터,",
+                hero_title_2: "오직 당신만의 것.",
+                hero_subtitle: "당신과 가족을 위한 개인정보 보호 중심의 복약 관리 앱.",
+                hero_desc: "서버 없음. 회원가입 없음. 100% 오프라인.",
+                btn_appstore: "App Store에서 다운로드",
+                btn_support: "개발 후원하기",
+                features_title: "왜 DoseMate인가요?",
+                features_subtitle: "단순함과 개인정보 보호를 위해 설계되었습니다.",
+                feat_privacy_title: "개인정보 최우선",
+                feat_privacy_desc: "100% 오프라인. 회원가입도, 서버도 없습니다. 데이터는 기기를 떠나지 않습니다.",
+                feat_family_title: "가족 관리",
+                feat_family_desc: "본인, 자녀, 부모님, 반려동물의 약까지 한 곳에서 관리하세요.",
+                feat_reminders_title: "스마트 알림",
+                feat_reminders_desc: "유연한 복용 스케줄과 재고 추적으로 약을 놓치지 않게 도와줍니다.",
+                feat_health_title: "건강 앱 연동",
+                feat_health_desc: "Apple 건강 앱과 완벽하게 동기화됩니다. 혈압, 혈당 등을 기록하세요.",
+                feat_global_title: "다국어 지원",
+                feat_global_desc: "한국어, 영어를 포함한 전 세계 9개 국어를 지원합니다.",
+                support_title: "개발자 후원하기",
+                support_desc: "DoseMate는 독립 프로젝트입니다. 여러분의 후원이 지속적인 업데이트를 만듭니다!",
+                footer_terms: "이용 약관",
+                footer_privacy: "개인정보 처리방침"
+            },
+            ja: {
+                nav_features: "機能",
+                nav_support: "サポート",
+                hero_badge: "App Storeで近日公開",
+                hero_title_1: "あなたの健康データ、",
+                hero_title_2: "あなただけのもの。",
+                hero_subtitle: "プライバシー重視の服薬管理アプリ。",
+                hero_desc: "サーバーなし。登録なし。100%オフライン。",
+                btn_appstore: "App Storeでダウンロード",
+                btn_support: "開発を支援",
+                features_title: "DoseMateを選ぶ理由",
+                features_subtitle: "シンプルさとプライバシーのために設計されました。",
+                feat_privacy_title: "プライバシー第一",
+                feat_privacy_desc: "100%オフライン。登録もサーバーもありません。データはデバイスから出ません。",
+                feat_family_title: "家族ケア",
+                feat_family_desc: "自分、子供、両親、ペットの薬を一か所で管理します。",
+                feat_reminders_title: "スマートリマインダー",
+                feat_reminders_desc: "柔軟なスケジュールと在庫追跡で、飲み忘れを防ぎます。",
+                feat_health_title: "ヘルスケア連携",
+                feat_health_desc: "Appleヘルスケアとシームレスに同期。血圧や血糖値などを記録。",
+                feat_global_title: "多言語サポート",
+                feat_global_desc: "日本語、英語、韓国語など9か国語に対応。",
+                support_title: "開発者を支援",
+                support_desc: "DoseMateは個人プロジェクトです。ご支援が継続的な更新の力になります！",
+                footer_terms: "利用規約",
+                footer_privacy: "プライバシーポリシー"
+            },
+            zh: {
+                nav_features: "功能",
+                nav_support: "支持",
+                hero_badge: "即将登陆 App Store",
+                hero_title_1: "您的健康数据，",
+                hero_title_2: "仅属于您。",
+                hero_subtitle: "为您和家人打造的隐私优先用药追踪器。",
+                hero_desc: "无服务器。无需注册。100% 离线。",
+                btn_appstore: "App Store 下载",
+                btn_support: "支持开发",
+                features_title: "为什么选择 DoseMate？",
+                features_subtitle: "专为简洁与隐私而设计。",
+                feat_privacy_title: "隐私至上",
+                feat_privacy_desc: "100% 离线。无需注册，无服务器。数据从未离开您的设备。",
+                feat_family_title: "家庭关怀",
+                feat_family_desc: "一站式管理您自己、孩子、父母甚至宠物的药物。",
+                feat_reminders_title: "智能提醒",
+                feat_reminders_desc: "灵活的时间表和库存追踪，确保您不会错过任何剂量。",
+                feat_health_title: "健康整合",
+                feat_health_desc: "与 Apple 健康无缝同步。追踪血压、血糖等。",
+                feat_global_title: "全球支持",
+                feat_global_desc: "支持包括中文、英语、韩语在内的9种语言。",
+                support_title: "支持开发者",
+                support_desc: "DoseMate 是一个独立项目。您的支持是我们持续更新的动力！",
+                footer_terms: "服务条款",
+                footer_privacy: "隐私政策"
+            },
+            es: {
+                nav_features: "Características",
+                nav_support: "Apoyo",
+                hero_badge: "Próximamente en App Store",
+                hero_title_1: "Tus datos de salud,",
+                hero_title_2: "Solo tuyos.",
+                hero_subtitle: "El rastreador de medicamentos centrado en la privacidad para ti y tu familia.",
+                hero_desc: "Sin servidores. Sin registro. 100% Offline.",
+                btn_appstore: "Descargar en App Store",
+                btn_support: "Apoyar el desarrollo",
+                features_title: "¿Por qué DoseMate?",
+                features_subtitle: "Diseñado para la simplicidad, construido para la privacidad.",
+                feat_privacy_title: "Privacidad Primero",
+                feat_privacy_desc: "100% Offline. Sin registros, sin servidores. Tus datos nunca salen de tu dispositivo.",
+                feat_family_title: "Cuidado Familiar",
+                feat_family_desc: "Gestiona medicamentos para ti, hijos, padres y mascotas en un solo lugar.",
+                feat_reminders_title: "Recordatorios Inteligentes",
+                feat_reminders_desc: "Horarios flexibles y seguimiento de inventario para asegurar que no pierdas una dosis.",
+                feat_health_title: "Integración de Salud",
+                feat_health_desc: "Sincronización perfecta con Apple Health. Rastrea presión arterial, glucosa y más.",
+                feat_global_title: "Soporte Global",
+                feat_global_desc: "Disponible en 9 idiomas, incluyendo español, inglés y coreano.",
+                support_title: "Apoyar al Desarrollador",
+                support_desc: "DoseMate es un proyecto independiente. ¡Tu apoyo mantiene las actualizaciones!",
+                footer_terms: "Términos de servicio",
+                footer_privacy: "Política de privacidad"
+            },
+            fr: {
+                nav_features: "Fonctionnalités",
+                nav_support: "Soutien",
+                hero_badge: "Bientôt sur l'App Store",
+                hero_title_1: "Vos données de santé,",
+                hero_title_2: "Rien qu'à vous.",
+                hero_subtitle: "Le suivi de médicaments axé sur la confidentialité pour vous et votre famille.",
+                hero_desc: "Pas de serveurs. Pas d'inscription. 100% Hors ligne.",
+                btn_appstore: "Télécharger sur l'App Store",
+                btn_support: "Soutenir le développement",
+                features_title: "Pourquoi DoseMate ?",
+                features_subtitle: "Conçu pour la simplicité, construit pour la confidentialité.",
+                feat_privacy_title: "Confidentialité d'abord",
+                feat_privacy_desc: "100% Hors ligne. Pas d'inscription, pas de serveurs. Vos données ne quittent jamais votre appareil.",
+                feat_family_title: "Soins Familiaux",
+                feat_family_desc: "Gérez les médicaments pour vous, vos enfants, vos parents et vos animaux de compagnie.",
+                feat_reminders_title: "Rappels Intelligents",
+                feat_reminders_desc: "Horaires flexibles et suivi des stocks pour ne jamais manquer une dose.",
+                feat_health_title: "Intégration Santé",
+                feat_health_desc: "Synchronisation parfaite avec Apple Santé. Suivez la pression artérielle, la glycémie, etc.",
+                feat_global_title: "Support Global",
+                feat_global_desc: "Disponible en 9 langues dont le français, l'anglais et le coréen.",
+                support_title: "Soutenir le Développeur",
+                support_desc: "DoseMate est un projet indépendant. Votre soutien permet de continuer les mises à jour !",
+                footer_terms: "Conditions d'utilisation",
+                footer_privacy: "Politique de confidentialité"
+            },
+            de: {
+                nav_features: "Funktionen",
+                nav_support: "Unterstützung",
+                hero_badge: "Bald im App Store",
+                hero_title_1: "Ihre Gesundheitsdaten,",
+                hero_title_2: "Nur Ihre.",
+                hero_subtitle: "Der datenschutzfreundliche Medikamenten-Tracker für Sie und Ihre Familie.",
+                hero_desc: "Keine Server. Keine Anmeldung. 100% Offline.",
+                btn_appstore: "Im App Store laden",
+                btn_support: "Entwicklung unterstützen",
+                features_title: "Warum DoseMate?",
+                features_subtitle: "Entworfen für Einfachheit, gebaut für Privatsphäre.",
+                feat_privacy_title: "Privatsphäre zuerst",
+                feat_privacy_desc: "100% Offline. Keine Anmeldung, keine Server. Ihre Daten verlassen niemals Ihr Gerät.",
+                feat_family_title: "Familienpflege",
+                feat_family_desc: "Verwalten Sie Medikamente für sich, Kinder, Eltern und Haustiere an einem Ort.",
+                feat_reminders_title: "Intelligente Erinnerungen",
+                feat_reminders_desc: "Flexible Zeitpläne und Bestandsverfolgung, damit Sie keine Dosis verpassen.",
+                feat_health_title: "Gesundheitsintegration",
+                feat_health_desc: "Nahtlose Synchronisierung mit Apple Health. Verfolgen Sie Blutdruck, Blutzucker und mehr.",
+                feat_global_title: "Globale Unterstützung",
+                feat_global_desc: "Verfügbar in 9 Sprachen, einschließlich Deutsch, Englisch und Koreanisch.",
+                support_title: "Entwickler unterstützen",
+                support_desc: "DoseMate ist ein unabhängiges Projekt. Ihre Unterstützung hält die Updates am Laufen!",
+                footer_terms: "Nutzungsbedingungen",
+                footer_privacy: "Datenschutzrichtlinie"
+            },
+            id: {
+                nav_features: "Fitur",
+                nav_support: "Dukungan",
+                hero_badge: "Segera Hadir di App Store",
+                hero_title_1: "Data Kesehatan Anda,",
+                hero_title_2: "Hanya Milik Anda.",
+                hero_subtitle: "Pelacak obat yang mengutamakan privasi untuk Anda dan keluarga.",
+                hero_desc: "Tanpa Server. Tanpa Daftar. 100% Offline.",
+                btn_appstore: "Unduh di App Store",
+                btn_support: "Dukung Pengembangan",
+                features_title: "Mengapa DoseMate?",
+                features_subtitle: "Dirancang untuk kesederhanaan, dibangun untuk privasi.",
+                feat_privacy_title: "Privasi Utama",
+                feat_privacy_desc: "100% Offline. Tanpa daftar, tanpa server. Data Anda tidak pernah meninggalkan perangkat.",
+                feat_family_title: "Perawatan Keluarga",
+                feat_family_desc: "Kelola obat untuk diri sendiri, anak, orang tua, dan hewan peliharaan di satu tempat.",
+                feat_reminders_title: "Pengingat Cerdas",
+                feat_reminders_desc: "Jadwal fleksibel dan pelacakan stok untuk memastikan Anda tidak melewatkan dosis.",
+                feat_health_title: "Integrasi Kesehatan",
+                feat_health_desc: "Sinkronisasi mulus dengan Apple Health. Lacak tekanan darah, gula darah, dan lainnya.",
+                feat_global_title: "Dukungan Global",
+                feat_global_desc: "Tersedia dalam 9 bahasa termasuk Indonesia, Inggris, dan Korea.",
+                support_title: "Dukung Pengembang",
+                support_desc: "DoseMate adalah proyek independen. Dukungan Anda membuat pembaruan terus berjalan!",
+                footer_terms: "Ketentuan Layanan",
+                footer_privacy: "Kebijakan Privasi"
+            },
+            ar: {
+                nav_features: "الميزات",
+                nav_support: "دعم",
+                hero_badge: "قريباً على App Store",
+                hero_title_1: "بياناتك الصحية،",
+                hero_title_2: "لك وحدك.",
+                hero_subtitle: "تطبيق تتبع الأدوية الذي يركز على الخصوصية لك ولعائلتك.",
+                hero_desc: "بدون خوادم. بدون تسجيل. 100% غير متصل بالإنترنت.",
+                btn_appstore: "تنزيل من App Store",
+                btn_support: "دعم التطوير",
+                features_title: "لماذا DoseMate؟",
+                features_subtitle: "صمم للبساطة، وبني للخصوصية.",
+                feat_privacy_title: "الخصوصية أولاً",
+                feat_privacy_desc: "100% غير متصل. لا تسجيل، لا خوادم. بياناتك لا تغادر جهازك أبداً.",
+                feat_family_title: "رعاية العائلة",
+                feat_family_desc: "إدارة الأدوية لنفسك، أطفالك، والديك، والحيوانات الأليفة في مكان واحد.",
+                feat_reminders_title: "تذكيرات ذكية",
+                feat_reminders_desc: "جداول مرنة وتتبع المخزون لضمان عدم تفويت أي جرعة.",
+                feat_health_title: "تكامل الصحة",
+                feat_health_desc: "مزامنة سلسة مع Apple Health. تتبع ضغط الدم، سكر الدم، والمزيد.",
+                feat_global_title: "دعم عالمي",
+                feat_global_desc: "متوفر بـ 9 لغات بما في ذلك العربية والإنجليزية والكورية.",
+                support_title: "دعم المطور",
+                support_desc: "DoseMate هو مشروع مستقل. دعمكم يحافظ على استمرار التحديثات!",
+                footer_terms: "شروط الخدمة",
+                footer_privacy: "سياسة الخصوصية"
+            }
+        };
+
+        const langSelect = document.getElementById('langSelect');
+        
+        function setLanguage(lang) {
+            // Update document lang and dir attributes
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.body.setAttribute('lang', lang);
+
+            // Update text content
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Save preference
+            localStorage.setItem('dosemate_lang', lang);
+        }
+
+        langSelect.addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+        });
+
+        // Initialize
+        const savedLang = localStorage.getItem('dosemate_lang');
+        const browserLang = navigator.language.split('-')[0];
+        const initialLang = savedLang || (translations[browserLang] ? browserLang : 'en');
+        
+        langSelect.value = initialLang;
+        setLanguage(initialLang);
+    </script>
+</body>
+</html>
