@@ -98,7 +98,10 @@ struct HealthMetricsView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color(hex: "FF6B6B").opacity(0.2), Color(hex: "EE5A5A").opacity(0.1)],
+                            colors: [
+                                AppColors.danger.opacity(0.2),
+                                AppColors.danger.opacity(0.1)
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -109,7 +112,10 @@ struct HealthMetricsView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color(hex: "FF6B6B"), Color(hex: "EE5A5A")],
+                            colors: [
+                                AppColors.premiumGold,
+                                AppColors.warning
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -170,13 +176,7 @@ struct HealthMetricsView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(AppSpacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [Color(hex: "FF6B6B"), Color(hex: "EE5A5A")],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .background(AppColors.premiumGradient)
                 .foregroundColor(.white)
                 .cornerRadius(AppRadius.md)
             }
@@ -201,7 +201,10 @@ struct HealthMetricsView: View {
                         ZStack {
                             Circle()
                                 .fill(LinearGradient(
-                                    colors: [Color(hex: "FF6B6B"), Color(hex: "EE5A5A")],
+                                    colors: [
+                                        AppColors.danger,
+                                        AppColors.danger.opacity(0.8)
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ))
@@ -248,7 +251,10 @@ struct HealthMetricsView: View {
                         ZStack {
                             Circle()
                                 .fill(LinearGradient(
-                                    colors: [Color(hex: "FF6B6B"), Color(hex: "EE5A5A")],
+                                    colors: [
+                                        AppColors.danger,
+                                        AppColors.danger.opacity(0.8)
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ))

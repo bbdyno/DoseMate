@@ -148,19 +148,19 @@ struct StatisticsView: View {
                             x: .value("날짜", data.date, unit: .day),
                             y: .value("복용", data.taken)
                         )
-                        .foregroundStyle(.green)
-                        
+                        .foregroundStyle(AppColors.chartGreen)
+
                         BarMark(
                             x: .value("날짜", data.date, unit: .day),
                             y: .value("지연", data.delayed)
                         )
-                        .foregroundStyle(.orange)
-                        
+                        .foregroundStyle(AppColors.chartOrange)
+
                         BarMark(
                             x: .value("날짜", data.date, unit: .day),
                             y: .value("건너뜀", data.skipped)
                         )
-                        .foregroundStyle(.red)
+                        .foregroundStyle(AppColors.chartRed)
                     }
                 }
                 .frame(height: 200)
@@ -173,9 +173,9 @@ struct StatisticsView: View {
                 
                 // 범례
                 HStack(spacing: 16) {
-                    legendItem(color: .green, label: "복용")
-                    legendItem(color: .orange, label: "지연")
-                    legendItem(color: .red, label: "건너뜀")
+                    legendItem(color: AppColors.chartGreen, label: "복용")
+                    legendItem(color: AppColors.chartOrange, label: "지연")
+                    legendItem(color: AppColors.chartRed, label: "건너뜀")
                 }
                 .font(.caption)
             }
@@ -269,28 +269,28 @@ struct StatisticsView: View {
             ], spacing: 16) {
                 summaryCard(
                     icon: "flame.fill",
-                    color: .orange,
+                    color: AppColors.warning,
                     value: "\(consecutiveDays)",
                     label: "연속 달성"
                 )
-                
+
                 summaryCard(
                     icon: "pills.fill",
-                    color: .blue,
+                    color: AppColors.primary,
                     value: "\(totalDoses)",
                     label: "총 복용 횟수"
                 )
-                
+
                 summaryCard(
                     icon: "clock.fill",
-                    color: .purple,
+                    color: AppColors.chartPurple,
                     value: averageDelayText,
                     label: "평균 지연 시간"
                 )
-                
+
                 summaryCard(
                     icon: "calendar",
-                    color: .green,
+                    color: AppColors.success,
                     value: "\(perfectDays)",
                     label: "완벽한 날"
                 )
@@ -306,18 +306,18 @@ struct StatisticsView: View {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundColor(color)
-            
+
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
-            
+
             Text(label)
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color.gray.opacity(0.1))
+        .background(AppColors.primarySoft)
         .cornerRadius(12)
     }
     
@@ -400,9 +400,9 @@ struct StatisticsView: View {
     }
     
     private func adherenceColor(for rate: Double) -> Color {
-        if rate >= 0.8 { return .green }
-        else if rate >= 0.5 { return .orange }
-        else { return .red }
+        if rate >= 0.8 { return AppColors.chartGreen }
+        else if rate >= 0.5 { return AppColors.chartOrange }
+        else { return AppColors.chartRed }
     }
     
     private var consecutiveDays: Int {

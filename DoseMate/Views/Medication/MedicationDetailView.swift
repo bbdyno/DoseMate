@@ -202,9 +202,9 @@ struct MedicationDetailView: View {
     }
     
     private var stockColor: Color {
-        if medication.isOutOfStock { return .red }
-        if medication.isLowStock { return .orange }
-        return .primary
+        if medication.isOutOfStock { return AppColors.danger }
+        if medication.isLowStock { return AppColors.warning }
+        return AppColors.primary
     }
     
     // MARK: - Statistics Section
@@ -245,7 +245,7 @@ struct MedicationDetailView: View {
                 statisticCard(
                     title: "연속",
                     value: "\(viewModel.consecutiveDays)일",
-                    color: .orange
+                    color: AppColors.warning
                 )
             }
         }
@@ -269,9 +269,9 @@ struct MedicationDetailView: View {
     }
     
     private func rateColor(_ rate: Double) -> Color {
-        if rate >= 0.8 { return .green }
-        if rate >= 0.5 { return .orange }
-        return .red
+        if rate >= 0.8 { return AppColors.chartGreen }
+        if rate >= 0.5 { return AppColors.chartOrange }
+        return AppColors.chartRed
     }
     
     // MARK: - Schedules Section
@@ -573,7 +573,7 @@ struct ScheduleRow: View {
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.blue.opacity(0.1))
+                    .background(AppColors.primarySoft)
                     .cornerRadius(6)
             }
         }
@@ -705,8 +705,8 @@ struct AddScheduleView: View {
                     Text(weekday.shortName)
                         .font(.caption)
                         .frame(width: 32, height: 32)
-                        .background(selectedDays.contains(weekday.rawValue) ? Color.blue : Color.gray.opacity(0.2))
-                        .foregroundColor(selectedDays.contains(weekday.rawValue) ? .white : .primary)
+                        .background(selectedDays.contains(weekday.rawValue) ? AppColors.primary : AppColors.divider)
+                        .foregroundColor(selectedDays.contains(weekday.rawValue) ? .white : AppColors.textPrimary)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)

@@ -28,14 +28,8 @@ struct PremiumView: View {
                 }
                 .padding()
             }
-            .background(
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-            )
+            .background(AppColors.background)
+            .ignoresSafeArea()
             .navigationTitle(DoseMateStrings.Premium.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -72,12 +66,15 @@ struct PremiumView: View {
                 .font(.system(size: 60))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [.yellow, .orange],
+                        colors: [
+                            AppColors.premiumGold,
+                            AppColors.warning
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: .orange.opacity(0.5), radius: 10)
+                .shadow(color: AppColors.warning.opacity(0.5), radius: 10)
             
             // 제목
             Text(DoseMateStrings.Premium.upgradeTitle)
@@ -93,10 +90,10 @@ struct PremiumView: View {
             if storeManager.isPremium {
                 Label(DoseMateStrings.Premium.currentStatus, systemImage: "checkmark.seal.fill")
                     .font(.headline)
-                    .foregroundColor(.green)
+                    .foregroundColor(AppColors.success)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(Color.green.opacity(0.15))
+                    .background(AppColors.success.opacity(0.15))
                     .cornerRadius(20)
             }
         }
@@ -139,8 +136,8 @@ struct PremiumView: View {
                     if let product = storeManager.premiumProduct {
                         Text(product.displayPrice)
                             .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .foregroundColor(.blue)
-                        
+                            .foregroundColor(AppColors.primary)
+
                         Text(DoseMateStrings.Premium.lifetimeAccess)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -168,13 +165,7 @@ struct PremiumView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .background(AppColors.premiumGradient)
                     .foregroundColor(.white)
                     .cornerRadius(14)
                 }
@@ -183,7 +174,7 @@ struct PremiumView: View {
                 // 가족 공유 안내
                 HStack {
                     Image(systemName: "person.3.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(AppColors.primary)
                     Text(DoseMateStrings.Premium.familySharing)
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -208,7 +199,7 @@ struct PremiumView: View {
             } label: {
                 Text(DoseMateStrings.Premium.restorePurchases)
                     .font(.subheadline)
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColors.primary)
             }
             
             // 약관 링크
@@ -267,23 +258,23 @@ struct FeatureRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundColor(.blue)
+                .foregroundColor(AppColors.primary)
                 .frame(width: 32)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 Text(description)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
+
             Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.green)
+                .foregroundColor(AppColors.success)
         }
     }
 }
@@ -308,7 +299,10 @@ struct TipJarView: View {
                             .font(.system(size: 50))
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [.pink, .red],
+                                    colors: [
+                                        AppColors.premiumPink,
+                                        AppColors.danger
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -326,10 +320,10 @@ struct TipJarView: View {
                         if storeManager.totalTipCount > 0 {
                             Text(DoseMateStrings.TipJar.totalTips(storeManager.totalTipCount))
                                 .font(.caption)
-                                .foregroundColor(.pink)
+                                .foregroundColor(AppColors.premiumPink)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 6)
-                                .background(Color.pink.opacity(0.1))
+                                .background(AppColors.premiumPink.opacity(0.1))
                                 .cornerRadius(12)
                         }
                     }
@@ -380,25 +374,25 @@ struct TipJarView: View {
                                     .foregroundColor(.secondary)
                             } icon: {
                                 Image(systemName: "info.circle.fill")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(AppColors.info)
                             }
-                            
+
                             Label {
                                 Text(DoseMateStrings.TipJar.infoSupportOnly)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             } icon: {
                                 Image(systemName: "heart.circle.fill")
-                                    .foregroundColor(.pink)
+                                    .foregroundColor(AppColors.premiumPink)
                             }
-                            
+
                             Label {
                                 Text(DoseMateStrings.TipJar.infoSecurePayment)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             } icon: {
                                 Image(systemName: "lock.shield.fill")
-                                    .foregroundColor(.green)
+                                    .foregroundColor(AppColors.success)
                             }
                         }
                     }
@@ -508,18 +502,24 @@ struct TipButton: View {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [.pink.opacity(0.2), .pink.opacity(0.1)],
+                                    colors: [
+                                        AppColors.premiumPink.opacity(0.2),
+                                        AppColors.premiumPink.opacity(0.1)
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                             .frame(width: 48, height: 48)
-                        
+
                         Image(systemName: productID?.icon ?? "heart.fill")
                             .font(.title3)
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [.pink, .red],
+                                    colors: [
+                                        AppColors.premiumPink,
+                                        AppColors.danger
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -545,7 +545,10 @@ struct TipButton: View {
                                 .fontWeight(.bold)
                                 .foregroundStyle(
                                     LinearGradient(
-                                        colors: [.pink, .red],
+                                        colors: [
+                                            AppColors.premiumPink,
+                                            AppColors.danger
+                                        ],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -574,9 +577,12 @@ struct TipButton: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(
-                                isProcessing 
+                                isProcessing
                                     ? LinearGradient(
-                                        colors: [.pink, .red],
+                                        colors: [
+                                            AppColors.premiumPink,
+                                            AppColors.danger
+                                        ],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -608,8 +614,8 @@ struct PremiumRequiredView: View {
         VStack(spacing: 16) {
             Image(systemName: "crown.fill")
                 .font(.system(size: 40))
-                .foregroundColor(.orange)
-            
+                .foregroundColor(AppColors.premiumGold)
+
             Text(DoseMateStrings.PremiumRequired.title)
                 .font(.headline)
             
@@ -645,10 +651,10 @@ struct PremiumBadge: View {
                 .font(.caption2)
                 .fontWeight(.bold)
         }
-        .foregroundColor(.orange)
+        .foregroundColor(AppColors.premiumGold)
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
-        .background(Color.orange.opacity(0.15))
+        .background(AppColors.premiumGold.opacity(0.15))
         .cornerRadius(4)
     }
 }

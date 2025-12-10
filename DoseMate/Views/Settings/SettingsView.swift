@@ -317,14 +317,14 @@ struct SettingsView: View {
             } label: {
                 HStack {
                     Label(DoseMateStrings.Settings.developerSupport, systemImage: "heart.fill")
-                        .foregroundColor(.pink)
+                        .foregroundColor(AppColors.premiumPink)
 
                     Spacer()
 
                     if storeManager.totalTipCount > 0 {
                         Text("\(storeManager.totalTipCount)회 💕")
                             .font(.caption)
-                            .foregroundColor(.pink)
+                            .foregroundColor(AppColors.premiumPink)
                     }
 
                     Image(systemName: "chevron.right")
@@ -419,7 +419,7 @@ struct SettingsView: View {
             if !PremiumFeatures.canUseHealthKit {
                 HStack {
                     Label(DoseMateStrings.Settings.healthkitIntegration, systemImage: "heart.fill")
-                        .foregroundColor(.red)
+                        .foregroundColor(AppColors.danger)
 
                     Spacer()
 
@@ -431,12 +431,12 @@ struct SettingsView: View {
                 } label: {
                     Text(DoseMateStrings.Settings.premiumLocked)
                         .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(AppColors.primary)
                 }
             } else {
                 HStack {
                     Label(DoseMateStrings.Settings.healthkitIntegration, systemImage: "heart.fill")
-                        .foregroundColor(.red)
+                        .foregroundColor(AppColors.danger)
                     Spacer()
                     Text(viewModel.healthKitStatusText)
                         .foregroundColor(.secondary)
@@ -576,7 +576,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: AppSpacing.sm) {
                     HStack {
                         Label(DoseMateStrings.Settings.icloudSync, systemImage: "icloud.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(AppColors.primary)
                         Spacer()
                         PremiumBadge()
                     }
@@ -597,13 +597,13 @@ struct SettingsView: View {
                 } label: {
                     Text(DoseMateStrings.Settings.premiumLocked)
                         .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(AppColors.primary)
                 }
             } else {
                 Toggle(isOn: $viewModel.iCloudSyncEnabled) {
                     HStack {
                         Label(DoseMateStrings.Settings.icloudSync, systemImage: "icloud.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(AppColors.primary)
                     }
                 }
                 .onChange(of: viewModel.iCloudSyncEnabled) { _, newValue in
@@ -618,11 +618,11 @@ struct SettingsView: View {
                         if viewModel.iCloudSyncEnabled && DoseMateApp.isCloudSyncEnabled {
                             Label(DoseMateStrings.Settings.syncActive, systemImage: "checkmark.circle.fill")
                                 .font(.caption)
-                                .foregroundColor(.green)
+                                .foregroundColor(AppColors.success)
                         } else if viewModel.iCloudSyncEnabled && !DoseMateApp.isCloudSyncEnabled {
                             Label(DoseMateStrings.Settings.syncRestartRequired, systemImage: "exclamationmark.circle.fill")
                                 .font(.caption)
-                                .foregroundColor(.orange)
+                                .foregroundColor(AppColors.warning)
                         } else {
                             Text(DoseMateStrings.Settings.syncDisabled)
                                 .font(.caption)
@@ -631,7 +631,7 @@ struct SettingsView: View {
                     } else {
                         Label(DoseMateStrings.Settings.icloudUnavailable, systemImage: "xmark.circle.fill")
                             .font(.caption)
-                            .foregroundColor(.red)
+                            .foregroundColor(AppColors.danger)
                     }
                 }
 
@@ -736,7 +736,7 @@ struct SettingsView: View {
                     }
                 } icon: {
                     Image(systemName: "crown.fill")
-                        .foregroundColor(storeManager.isPremium ? .yellow : .gray)
+                        .foregroundColor(storeManager.isPremium ? AppColors.premiumGold : AppColors.chartGray)
                 }
             }
 

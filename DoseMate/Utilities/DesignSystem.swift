@@ -58,19 +58,95 @@ struct AppColors {
     /// 레몬
     static let lemon = Color(hex: "F5D76E")
     
-    // MARK: - Semantic Colors
-    
+    // MARK: - Semantic Colors (다크모드 대응)
+
     /// 성공 (초록)
-    static let success = Color(hex: "4CAF93")
-    
+    static let success = Color.adaptive(
+        light: Color(hex: "4CAF93"),
+        dark: Color(hex: "66BB9A")
+    )
+
     /// 경고 (주황)
-    static let warning = Color(hex: "F5A623")
-    
+    static let warning = Color.adaptive(
+        light: Color(hex: "F5A623"),
+        dark: Color(hex: "FFB74D")
+    )
+
     /// 위험 (빨강)
-    static let danger = Color(hex: "E57373")
-    
+    static let danger = Color.adaptive(
+        light: Color(hex: "E57373"),
+        dark: Color(hex: "EF9A9A")
+    )
+
     /// 정보 (파랑)
-    static let info = Color(hex: "64B5F6")
+    static let info = Color.adaptive(
+        light: Color(hex: "64B5F6"),
+        dark: Color(hex: "81C9FA")
+    )
+
+    // MARK: - Chart Colors (다크모드 대응)
+
+    /// 차트 초록
+    static let chartGreen = Color.adaptive(
+        light: Color(hex: "4CAF50"),
+        dark: Color(hex: "66BB6A")
+    )
+
+    /// 차트 주황
+    static let chartOrange = Color.adaptive(
+        light: Color(hex: "FF9800"),
+        dark: Color(hex: "FFB74D")
+    )
+
+    /// 차트 빨강
+    static let chartRed = Color.adaptive(
+        light: Color(hex: "F44336"),
+        dark: Color(hex: "E57373")
+    )
+
+    /// 차트 파랑
+    static let chartBlue = Color.adaptive(
+        light: Color(hex: "2196F3"),
+        dark: Color(hex: "64B5F6")
+    )
+
+    /// 차트 보라
+    static let chartPurple = Color.adaptive(
+        light: Color(hex: "9C27B0"),
+        dark: Color(hex: "BA68C8")
+    )
+
+    /// 차트 회색
+    static let chartGray = Color.adaptive(
+        light: Color(hex: "9E9E9E"),
+        dark: Color(hex: "BDBDBD")
+    )
+
+    // MARK: - Premium Colors (다크모드 대응)
+
+    /// 프리미엄 골드
+    static let premiumGold = Color.adaptive(
+        light: Color(hex: "FFD700"),
+        dark: Color(hex: "FFE55C")
+    )
+
+    /// 프리미엄 블루
+    static let premiumBlue = Color.adaptive(
+        light: Color(hex: "4A90D9"),
+        dark: Color(hex: "5B9FE3")
+    )
+
+    /// 프리미엄 퍼플
+    static let premiumPurple = Color.adaptive(
+        light: Color(hex: "9B8FD9"),
+        dark: Color(hex: "A99FE3")
+    )
+
+    /// 프리미엄 핑크
+    static let premiumPink = Color.adaptive(
+        light: Color(hex: "E91E63"),
+        dark: Color(hex: "F48FB1")
+    )
     
     // MARK: - Neutral Colors
 
@@ -108,29 +184,49 @@ struct AppColors {
         dark: Color(hex: "2A3140")
     )
     
-    // MARK: - Gradients
-    
+    // MARK: - Gradients (다크모드 대응)
+
     /// 메인 그라데이션
     static let primaryGradient = LinearGradient(
-        colors: [Color(hex: "4A90D9"), Color(hex: "7EB8F0")],
+        colors: [
+            Color.adaptive(light: Color(hex: "4A90D9"), dark: Color(hex: "5B9FE3")),
+            Color.adaptive(light: Color(hex: "7EB8F0"), dark: Color(hex: "90C8F5"))
+        ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    
+
     /// 성공 그라데이션
     static let successGradient = LinearGradient(
-        colors: [Color(hex: "4CAF93"), Color(hex: "7DD3BE")],
+        colors: [
+            Color.adaptive(light: Color(hex: "4CAF93"), dark: Color(hex: "66BB9A")),
+            Color.adaptive(light: Color(hex: "7DD3BE"), dark: Color(hex: "8FE0CB"))
+        ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    
+
     /// 헤더 그라데이션
     static let headerGradient = LinearGradient(
-        colors: [Color(hex: "4A90D9"), Color(hex: "6BA8E5"), Color(hex: "7EB8F0")],
+        colors: [
+            Color.adaptive(light: Color(hex: "4A90D9"), dark: Color(hex: "5B9FE3")),
+            Color.adaptive(light: Color(hex: "6BA8E5"), dark: Color(hex: "7CB8EF")),
+            Color.adaptive(light: Color(hex: "7EB8F0"), dark: Color(hex: "90C8F5"))
+        ],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    
+
+    /// 프리미엄 그라데이션
+    static let premiumGradient = LinearGradient(
+        colors: [
+            Color.adaptive(light: Color(hex: "4A90D9"), dark: Color(hex: "5B9FE3")),
+            Color.adaptive(light: Color(hex: "9B8FD9"), dark: Color(hex: "A99FE3"))
+        ],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+
     /// 카드 그라데이션 (미묘한, 다크모드 대응)
     static let cardGradient = LinearGradient(
         colors: [
