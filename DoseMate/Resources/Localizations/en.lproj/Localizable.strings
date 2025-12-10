@@ -16,8 +16,8 @@
 "alert.restart_required_message" = "Changes will take effect after restarting the app.";
 "alert.restart_required_title" = "App Restart Required";
 "app.description" = "Your medication reminder companion";
-"app.name" = "PillMate";
-"app.welcome" = "Welcome to PillMate";
+"app.name" = "DoseMate";
+"app.welcome" = "Welcome to DoseMate";
 "appointments.add_title" = "Add Appointment";
 "appointments.complete" = "Complete";
 "appointments.datetime" = "Appointment Date & Time";
@@ -466,6 +466,7 @@
 "settings.last_sync" = "Last Sync";
 "settings.last_sync_label" = "Last Sync";
 "settings.later_button" = "Later";
+"settings.missed_dose_alert" = "Alert on missed doses";
 "settings.more_developer_options" = "More Developer Options";
 "settings.not_synced" = "Not Synced";
 "settings.notification_permission" = "Notification Permission";

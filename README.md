@@ -48,6 +48,10 @@
 >
 > 🇰🇷 커피 한 잔의 후원은 저에게 큰 힘이 됩니다. 감사합니다! <br>
 > 🇺🇸 Thanks for the coffee! Your support keeps me going. <br>
+> 🇸🇦 شكراً على القهوة! دعمك يعني لي الكثير. <br>
+> 🇩🇪 Danke für den Kaffee! Deine Unterstützung motiviert mich. <br>
+> 🇫🇷 Merci pour le café ! Votre soutien me motive. <br>
+> 🇪🇸 ¡Gracias por el café! Tu apoyo me motiva a seguir. <br>
 > 🇯🇵 コーヒーの差し入れ、ありがとうございます！励みになります。 <br>
 > 🇨🇳 感谢请我喝杯咖啡！您的支持是我最大的动力。 <br>
 > 🇮🇩 Terima kasih traktiran kopinya! Dukunganmu sangat berarti.

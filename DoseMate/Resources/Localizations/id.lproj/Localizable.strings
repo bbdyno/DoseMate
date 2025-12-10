@@ -16,8 +16,8 @@
 "alert.restart_required_message" = "Perubahan akan diterapkan setelah aplikasi dimulai ulang.";
 "alert.restart_required_title" = "Perlu Mulai Ulang Aplikasi";
 "app.description" = "Pendamping pengingat obat Anda";
-"app.name" = "PillMate";
-"app.welcome" = "Selamat datang di PillMate";
+"app.name" = "DoseMate";
+"app.welcome" = "Selamat datang di DoseMate";
 "appointments.add_title" = "Tambah Janji";
 "appointments.complete" = "Selesai";
 "appointments.datetime" = "Tanggal & waktu";

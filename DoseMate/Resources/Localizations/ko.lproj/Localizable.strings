@@ -16,8 +16,8 @@
 "alert.restart_required_message" = "변경 사항은 앱을 재시작한 후 적용됩니다.";
 "alert.restart_required_title" = "앱 재시작 필요";
 "app.description" = "당신의 복약 알림 동반자";
-"app.name" = "PillMate";
-"app.welcome" = "PillMate에 오신 것을 환영합니다";
+"app.name" = "DoseMate";
+"app.welcome" = "DoseMate에 오신 것을 환영합니다";
 "appointments.add_title" = "예약 추가";
 "appointments.complete" = "완료";
 "appointments.datetime" = "예약 날짜 및 시간";

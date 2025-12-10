@@ -16,8 +16,8 @@
 "alert.restart_required_message" = "変更はアプリ再起動後に適用されます。";
 "alert.restart_required_title" = "アプリの再起動が必要";
 "app.description" = "あなたの服薬リマインダーの相棒";
-"app.name" = "PillMate";
-"app.welcome" = "PillMateへようこそ";
+"app.name" = "DoseMate";
+"app.welcome" = "DoseMateへようこそ";
 "appointments.add_title" = "予約を追加";
 "appointments.complete" = "完了";
 "appointments.datetime" = "予約日時";

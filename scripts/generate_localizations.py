@@ -52,6 +52,10 @@ LANGUAGE_MAPPING = {
     'ja': 'ja.lproj',
     'zh-Hans': 'zh-Hans.lproj',
     'id': 'id.lproj',
+    'de': 'de.lproj',
+    'es': 'es.lproj',
+    'fr': 'fr.lproj',
+    'ar': 'ar.lproj',
 }
 
 

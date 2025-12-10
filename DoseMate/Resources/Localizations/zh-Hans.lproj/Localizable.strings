@@ -16,8 +16,8 @@
 "alert.restart_required_message" = "更改将在重启应用后生效。";
 "alert.restart_required_title" = "需要重启应用";
 "app.description" = "你的用药提醒伙伴";
-"app.name" = "PillMate";
-"app.welcome" = "欢迎使用 PillMate";
+"app.name" = "DoseMate";
+"app.welcome" = "欢迎使用 DoseMate";
 "appointments.add_title" = "添加预约";
 "appointments.complete" = "完成";
 "appointments.datetime" = "预约日期及时间";
