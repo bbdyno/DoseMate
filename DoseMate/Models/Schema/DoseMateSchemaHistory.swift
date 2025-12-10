@@ -18,8 +18,7 @@ enum DoseMateSchemaHistory: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] {
         [
             DoseMateSchemaV1.self,
-            DoseMateSchemaV2.self,
-            DoseMateSchemaV3.self
+            DoseMateSchemaV2.self
         ]
     }
 
@@ -27,17 +26,11 @@ enum DoseMateSchemaHistory: SchemaMigrationPlan {
     static var stages: [MigrationStage] {
         [
             migrateV1toV2,
-            migrateV2toV3,
         ]
     }
 
     static let migrateV1toV2 = MigrationStage.lightweight(
         fromVersion: DoseMateSchemaV1.self,
         toVersion: DoseMateSchemaV2.self
-    )
-
-    static let migrateV2toV3 = MigrationStage.lightweight(
-        fromVersion: DoseMateSchemaV2.self,
-        toVersion: DoseMateSchemaV3.self
     )
 }

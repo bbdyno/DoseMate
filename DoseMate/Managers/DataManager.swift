@@ -40,7 +40,7 @@ final class DataManager: ObservableObject {
             }
 
             // MigrationPlan과 함께 컨테이너 생성
-            let schema = Schema(versionedSchema: DoseMateSchemaV3.self)
+            let schema = Schema(versionedSchema: DoseMateSchemaV2.self)
             let storeURL = groupContainerURL.appendingPathComponent("DoseMate.sqlite")
             let config = ModelConfiguration(
                 url: storeURL,

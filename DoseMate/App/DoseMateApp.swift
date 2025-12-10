@@ -53,7 +53,7 @@ struct DoseMateApp: App {
         }
 
         do {
-            let schema = Schema(versionedSchema: DoseMateSchemaV3.self)
+            let schema = Schema(versionedSchema: DoseMateSchemaV2.self)
             let storeURL = groupContainerURL.appendingPathComponent("DoseMate.sqlite")
 
             if shouldEnableCloudKit {
