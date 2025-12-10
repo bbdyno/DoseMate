@@ -470,8 +470,7 @@ final class HomeViewModel {
 
         // 건강 지표 입력 제안 (관련 지표가 있는 약물만)
         if let medication = log.medication,
-           !medication.relatedMetricTypes.isEmpty,
-           PremiumFeatures.canUseHealthKit {
+           !medication.relatedMetricTypes.isEmpty {
             logForHealthMetric = log
             showHealthMetricPrompt = true
         }

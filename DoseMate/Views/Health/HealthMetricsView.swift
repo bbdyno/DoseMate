@@ -16,26 +16,21 @@ struct HealthMetricsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = HealthMetricsViewModel()
     @StateObject private var healthKitManager = HealthKitManager.shared
-    @State private var showPremiumSheet = false
     
     // MARK: - Body
     
     var body: some View {
         NavigationStack {
             Group {
-                if !PremiumFeatures.canUseHealthKit {
-                    // 프리미엄이 아닌 사용자: 업그레이드 안내만 표시
-                    premiumRequiredContent
-                } else {
-                    // 프리미엄 사용자: 전체 기능 표시
+                if healthKitManager.isAuthorized {
                     ScrollView {
                         VStack(spacing: AppSpacing.lg) {
                             // HealthKit 동기화 카드
                             syncCard
-
+                            
                             // 지표 그리드
                             metricsGrid
-
+                            
                             // 선택된 지표 상세
                             if let selectedType = viewModel.selectedMetricType {
                                 metricDetailCard(for: selectedType)
@@ -45,149 +40,56 @@ struct HealthMetricsView: View {
                         .padding(.horizontal, AppSpacing.md)
                         .padding(.bottom, AppSpacing.xxl)
                     }
+                } else {
+                    VStack {
+                        Spacer()
+                        // HealthKit 동기화 카드 (권한 요청)
+                        syncCard
+                            .padding(.horizontal, AppSpacing.md)
+                        Spacer()
+                    }
                 }
             }
             .background(AppColors.background)
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle(DoseMateStrings.Health.title)
             .toolbar {
-                // 프리미엄 사용자에게만 + 버튼 표시
-                if PremiumFeatures.canUseHealthKit {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.inputMetricType = nil
-                            viewModel.showInputSheet = true
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(AppColors.primaryGradient)
-                        }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.inputMetricType = nil
+                        viewModel.showInputSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(AppColors.primaryGradient)
                     }
                 }
             }
-            .toolbarBackground(.clear, for: .navigationBar)
-            .onAppear {
-                viewModel.setup(with: modelContext)
+        }
+        .toolbarBackground(.clear, for: .navigationBar)
+        .onAppear {
+            viewModel.setup(with: modelContext)
+            Task {
+                await viewModel.requestHealthKitPermission()
+                await viewModel.syncAuthorized()
             }
-            .sheet(isPresented: $viewModel.showInputSheet) {
-                metricInputSheet
+        }
+        .sheet(isPresented: $viewModel.showInputSheet) {
+            metricInputSheet
+        }
+        .alert(DoseMateStrings.Health.error, isPresented: .constant(viewModel.errorMessage != nil)) {
+            Button(DoseMateStrings.Health.confirm) {
+                viewModel.errorMessage = nil
             }
-            .sheet(isPresented: $showPremiumSheet) {
-                PremiumView()
-            }
-            .alert(DoseMateStrings.Health.error, isPresented: .constant(viewModel.errorMessage != nil)) {
-                Button(DoseMateStrings.Health.confirm) {
-                    viewModel.errorMessage = nil
-                }
-            } message: {
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                }
+        } message: {
+            if let error = viewModel.errorMessage {
+                Text(error)
             }
         }
     }
-
-    // MARK: - Premium Required Content
-
-    private var premiumRequiredContent: some View {
-        VStack(spacing: AppSpacing.xl) {
-            Spacer()
-
-            // 아이콘
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                AppColors.danger.opacity(0.2),
-                                AppColors.danger.opacity(0.1)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 50))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                AppColors.premiumGold,
-                                AppColors.warning
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .padding(.bottom, AppSpacing.md)
-
-            // 제목
-            VStack(spacing: AppSpacing.sm) {
-                Text(DoseMateStrings.Health.premiumFeature)
-                    .font(AppTypography.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.textPrimary)
-
-                Text(DoseMateStrings.Health.premiumDescription)
-                    .font(AppTypography.body)
-                    .foregroundColor(AppColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppSpacing.xl)
-            }
-
-            // 기능 목록
-            VStack(alignment: .leading, spacing: AppSpacing.md) {
-                FeatureRow(
-                    icon: "heart.text.square.fill",
-                    title: DoseMateStrings.Health.syncFromHealth,
-                    description: DoseMateStrings.Health.syncAuto
-                )
-
-                FeatureRow(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: DoseMateStrings.Health.metricsTitle,
-                    description: DoseMateStrings.Health.metricsTracking
-                )
-
-                FeatureRow(
-                    icon: "calendar",
-                    title: DoseMateStrings.Health.recordManagement,
-                    description: DoseMateStrings.Health.allDataStorage
-                )
-            }
-            .padding(AppSpacing.lg)
-            .background(AppColors.cardBackground)
-            .cornerRadius(AppRadius.lg)
-            .shadow(color: Color.black.opacity(0.04), radius: 8, y: 2)
-            .padding(.horizontal, AppSpacing.lg)
-
-            Spacer()
-
-            // 업그레이드 버튼
-            Button {
-                showPremiumSheet = true
-            } label: {
-                HStack(spacing: AppSpacing.sm) {
-                    Image(systemName: "crown.fill")
-                    Text(DoseMateStrings.Health.upgradePremium)
-                        .fontWeight(.semibold)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(AppSpacing.md)
-                .background(AppColors.premiumGradient)
-                .foregroundColor(.white)
-                .cornerRadius(AppRadius.md)
-            }
-            .padding(.horizontal, AppSpacing.lg)
-            .padding(.bottom, AppSpacing.xl)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
+    
     // MARK: - Sync Card
-
+    
     private var syncCard: some View {
         Group {
             if !healthKitManager.isAuthorized {
@@ -209,24 +111,24 @@ struct HealthMetricsView: View {
                                     endPoint: .bottomTrailing
                                 ))
                                 .frame(width: 50, height: 50)
-
+                            
                             Image(systemName: "hand.raised.fill")
                                 .font(.system(size: 22))
                                 .foregroundColor(.white)
                         }
-
+                        
                         VStack(alignment: .leading, spacing: 4) {
                             Text(DoseMateStrings.Health.permissionRequired)
                                 .font(AppTypography.headline)
                                 .foregroundColor(AppColors.textPrimary)
-
+                            
                             Text(DoseMateStrings.Health.permissionDescription)
                                 .font(AppTypography.caption)
                                 .foregroundColor(AppColors.textSecondary)
                         }
-
+                        
                         Spacer()
-
+                        
                         Image(systemName: "chevron.right")
                             .font(.system(size: 18))
                             .foregroundColor(AppColors.primary)
@@ -259,17 +161,17 @@ struct HealthMetricsView: View {
                                     endPoint: .bottomTrailing
                                 ))
                                 .frame(width: 50, height: 50)
-
+                            
                             Image(systemName: "heart.text.square.fill")
                                 .font(.system(size: 22))
                                 .foregroundColor(.white)
                         }
-
+                        
                         VStack(alignment: .leading, spacing: 4) {
                             Text(DoseMateStrings.Health.syncFromHealth)
                                 .font(AppTypography.headline)
                                 .foregroundColor(AppColors.textPrimary)
-
+                            
                             if let lastSync = healthKitManager.lastSyncDate {
                                 Text(DoseMateStrings.Health.lastSync(lastSync.relativeTimeString))
                                     .font(AppTypography.caption)
@@ -280,9 +182,9 @@ struct HealthMetricsView: View {
                                     .foregroundColor(AppColors.textSecondary)
                             }
                         }
-
+                        
                         Spacer()
-
+                        
                         if viewModel.isSyncing {
                             ProgressView()
                                 .tint(AppColors.primary)
@@ -347,7 +249,7 @@ struct HealthMetricsView: View {
                     Text(type.displayName)
                         .font(AppTypography.headline)
                         .foregroundColor(AppColors.textPrimary)
-
+                    
                     Text(DoseMateStrings.Health.recentRecords)
                         .font(AppTypography.caption)
                         .foregroundColor(AppColors.textSecondary)
@@ -377,7 +279,7 @@ struct HealthMetricsView: View {
                     )
                     .foregroundStyle(type.color.gradient)
                     .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
-
+                    
                     AreaMark(
                         x: .value(DoseMateStrings.Health.chartDate, metric.recordedAt),
                         y: .value(DoseMateStrings.Health.chartValue, metric.value)
@@ -389,7 +291,7 @@ struct HealthMetricsView: View {
                             endPoint: .bottom
                         )
                     )
-
+                    
                     PointMark(
                         x: .value(DoseMateStrings.Health.chartDate, metric.recordedAt),
                         y: .value(DoseMateStrings.Health.chartValue, metric.value)
@@ -441,11 +343,11 @@ struct HealthMetricsView: View {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 40))
                         .foregroundColor(AppColors.textTertiary)
-
+                    
                     Text(DoseMateStrings.Health.noRecords)
                         .font(AppTypography.subheadline)
                         .foregroundColor(AppColors.textSecondary)
-
+                    
                     Button {
                         viewModel.openInputSheet(for: type)
                     } label: {
@@ -524,7 +426,7 @@ struct HealthMetricsView: View {
                                 Text(DoseMateStrings.Health.systolicUnit)
                                     .font(AppTypography.caption)
                                     .foregroundColor(AppColors.textSecondary)
-
+                                
                                 TextField(DoseMateStrings.Health.diastolicBp, text: $viewModel.inputDiastolic)
                                     .keyboardType(.decimalPad)
                                     .font(AppTypography.headline)
@@ -547,8 +449,8 @@ struct HealthMetricsView: View {
                                                 .padding(AppSpacing.sm)
                                                 .background(
                                                     viewModel.inputMoodLevel == mood
-                                                        ? mood.color.opacity(0.3)
-                                                        : Color.clear
+                                                    ? mood.color.opacity(0.3)
+                                                    : Color.clear
                                                 )
                                                 .cornerRadius(AppRadius.md)
                                         }
@@ -580,7 +482,7 @@ struct HealthMetricsView: View {
                                 Text("관련 약물 (선택사항)")
                                     .font(AppTypography.caption)
                                     .foregroundColor(AppColors.textSecondary)
-
+                                
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: AppSpacing.sm) {
                                         ForEach(viewModel.relatedMedications(for: type)) { medication in
@@ -595,7 +497,7 @@ struct HealthMetricsView: View {
                                                     Circle()
                                                         .fill(medication.medicationColor.swiftUIColor)
                                                         .frame(width: 12, height: 12)
-
+                                                    
                                                     Text(medication.name)
                                                         .font(AppTypography.caption)
                                                 }
@@ -603,21 +505,21 @@ struct HealthMetricsView: View {
                                                 .padding(.vertical, AppSpacing.xs)
                                                 .background(
                                                     viewModel.selectedMedication == medication
-                                                        ? medication.medicationColor.swiftUIColor.opacity(0.2)
-                                                        : AppColors.background
+                                                    ? medication.medicationColor.swiftUIColor.opacity(0.2)
+                                                    : AppColors.background
                                                 )
                                                 .foregroundColor(
                                                     viewModel.selectedMedication == medication
-                                                        ? medication.medicationColor.swiftUIColor
-                                                        : AppColors.textPrimary
+                                                    ? medication.medicationColor.swiftUIColor
+                                                    : AppColors.textPrimary
                                                 )
                                                 .cornerRadius(AppRadius.full)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: AppRadius.full)
                                                         .stroke(
                                                             viewModel.selectedMedication == medication
-                                                                ? medication.medicationColor.swiftUIColor
-                                                                : AppColors.divider,
+                                                            ? medication.medicationColor.swiftUIColor
+                                                            : AppColors.divider,
                                                             lineWidth: 1
                                                         )
                                                 )
@@ -630,7 +532,7 @@ struct HealthMetricsView: View {
                                 .padding(.horizontal, -AppSpacing.lg)
                             }
                         }
-
+                        
                         // 메모
                         TextField(DoseMateStrings.Health.notesOptional, text: $viewModel.inputNotes)
                             .padding(AppSpacing.md)
@@ -708,7 +610,6 @@ struct HealthMetricsView: View {
         viewModel.inputMetricType = nil
     }
 }
-
 // MARK: - Health Metric Card View
 
 struct HealthMetricCardView: View {
@@ -716,7 +617,7 @@ struct HealthMetricCardView: View {
     let metric: HealthMetric?
     let isSelected: Bool
     let onTap: () -> Void
-
+    
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -724,9 +625,9 @@ struct HealthMetricCardView: View {
                     Image(systemName: type.icon)
                         .font(.system(size: 18))
                         .foregroundColor(type.color)
-
+                    
                     Spacer()
-
+                    
                     // 선택 상태 표시
                     HStack(spacing: AppSpacing.xs) {
                         if isSelected {
@@ -734,23 +635,23 @@ struct HealthMetricCardView: View {
                                 .font(AppTypography.caption2)
                                 .foregroundColor(type.color)
                         }
-
+                        
                         Image(systemName: isSelected ? "chevron.up.circle.fill" : "chart.line.uptrend.xyaxis")
                             .font(.system(size: isSelected ? 20 : 16))
                             .foregroundColor(isSelected ? type.color : AppColors.textTertiary)
                     }
                 }
-
+                
                 Text(type.displayName)
                     .font(AppTypography.caption)
                     .foregroundColor(AppColors.textSecondary)
-
+                
                 if let metric = metric {
                     Text(metric.displayValue)
                         .font(AppTypography.title3)
                         .fontWeight(.bold)
                         .foregroundColor(AppColors.textPrimary)
-
+                    
                     Text(metric.recordedAt.relativeTimeString)
                         .font(AppTypography.caption2)
                         .foregroundColor(AppColors.textTertiary)
@@ -759,7 +660,7 @@ struct HealthMetricCardView: View {
                         .font(AppTypography.title3)
                         .fontWeight(.bold)
                         .foregroundColor(AppColors.textTertiary)
-
+                    
                     Text(DoseMateStrings.Health.noRecord)
                         .font(AppTypography.caption2)
                         .foregroundColor(AppColors.textTertiary)

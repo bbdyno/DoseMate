@@ -44,7 +44,7 @@ struct MedicationDetailView: View {
                 schedulesSection
 
                 // 관련 건강 지표
-                if !medication.relatedMetricTypes.isEmpty && PremiumFeatures.canUseHealthKit {
+                if !medication.relatedMetricTypes.isEmpty {
                     relatedHealthMetricsSection
                 }
 

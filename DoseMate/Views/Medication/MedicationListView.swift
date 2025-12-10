@@ -14,7 +14,6 @@ struct MedicationListView: View {
     
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = MedicationListViewModel()
-    @State private var showPremiumSheet = false
     
     // MARK: - Body
     
@@ -24,12 +23,7 @@ struct MedicationListView: View {
                 VStack(spacing: AppSpacing.lg) {
                     // 통계 헤더
                     statisticsHeader
-                    
-                    // 💎 프리미엄 안내 (무료 사용자만)
-                    if !StoreKitManager.shared.isPremium {
-                        premiumBanner
-                    }
-                    
+
                     // 약물 목록
                     if viewModel.isEmpty {
                         emptyStateView
@@ -78,11 +72,7 @@ struct MedicationListView: View {
                         
                         // 추가 버튼
                         Button {
-                            if viewModel.canAddMedication {
-                                viewModel.showAddMedicationSheet = true
-                            } else {
-                                showPremiumSheet = true
-                            }
+                            viewModel.showAddMedicationSheet = true
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title3)
@@ -104,9 +94,6 @@ struct MedicationListView: View {
                         await viewModel.addMedication(medication)
                     }
                 }
-            }
-            .sheet(isPresented: $showPremiumSheet) {
-                PremiumView()
             }
             .alert(DoseMateStrings.MedicationList.deleteAlertTitle, isPresented: $viewModel.showDeleteConfirmation) {
                 Button(DoseMateStrings.Common.cancel, role: .cancel) {}
@@ -150,52 +137,6 @@ struct MedicationListView: View {
         }
     }
     
-    // MARK: - Premium Banner
-    
-    private var premiumBanner: some View {
-        Button {
-            showPremiumSheet = true
-        } label: {
-            HStack(spacing: AppSpacing.sm) {
-                ZStack {
-                    Circle()
-                        .fill(AppColors.primaryGradient)
-                        .frame(width: 40, height: 40)
-                    
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(.white)
-                }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(DoseMateStrings.MedicationList.freeVersion)
-                        .font(AppTypography.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(AppColors.textPrimary)
-
-                    Text(DoseMateStrings.MedicationList.medicationsRegistered(viewModel.totalMedicationsCount, PremiumFeatures.freeMedicationLimit))
-                        .font(AppTypography.caption)
-                        .foregroundColor(AppColors.textSecondary)
-                }
-
-                Spacer()
-
-                Text(DoseMateStrings.MedicationList.upgrade)
-                    .font(AppTypography.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, AppSpacing.sm)
-                    .padding(.vertical, AppSpacing.xs)
-                    .background(AppColors.primaryGradient)
-                    .cornerRadius(AppRadius.full)
-            }
-            .padding(AppSpacing.md)
-            .background(AppColors.primarySoft)
-            .cornerRadius(AppRadius.lg)
-        }
-        .buttonStyle(.plain)
-    }
-    
     // MARK: - Empty State
     
     private var emptyStateView: some View {
@@ -224,11 +165,7 @@ struct MedicationListView: View {
             }
             
             Button {
-                if viewModel.canAddMedication {
-                    viewModel.showAddMedicationSheet = true
-                } else {
-                    showPremiumSheet = true
-                }
+                viewModel.showAddMedicationSheet = true
             } label: {
                 HStack {
                     Image(systemName: "plus.circle.fill")

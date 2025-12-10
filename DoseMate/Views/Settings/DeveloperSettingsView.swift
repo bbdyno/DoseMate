@@ -16,8 +16,7 @@ struct DeveloperSettingsView: View {
     // MARK: - Properties
     
     @Environment(\.modelContext) private var modelContext
-    @State private var storeManager = StoreKitManager.shared
-    
+
     @Query private var medications: [Medication]
     @Query private var logs: [MedicationLog]
     @Query private var appointments: [Appointment]
@@ -31,9 +30,6 @@ struct DeveloperSettingsView: View {
     
     var body: some View {
         List {
-            // 프리미엄 설정
-            premiumSection
-            
             // 데이터 현황
             dataStatusSection
             
@@ -62,69 +58,7 @@ struct DeveloperSettingsView: View {
             Text("테스트용 샘플 데이터를 추가하시겠습니까?")
         }
     }
-    
-    // MARK: - Premium Section
-    
-    private var premiumSection: some View {
-        Section {
-            // 프리미엄 토글
-            Toggle(isOn: Binding(
-                get: { storeManager.isPremium },
-                set: { storeManager.debugSetPremium($0) }
-            )) {
-                HStack {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(storeManager.isPremium ? .yellow : .gray)
-                    Text("프리미엄 활성화")
-                }
-            }
-            
-            // 빠른 토글 버튼들
-            HStack {
-                Button {
-                    storeManager.debugSetPremium(true)
-                } label: {
-                    Text("ON")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(storeManager.isPremium ? Color.green : Color.gray.opacity(0.3))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
-                .buttonStyle(.plain)
-                
-                Button {
-                    storeManager.debugSetPremium(false)
-                } label: {
-                    Text("OFF")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(!storeManager.isPremium ? Color.red : Color.gray.opacity(0.3))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
-                .buttonStyle(.plain)
-            }
-            
-            // 기부 횟수
-            HStack {
-                Text("기부 횟수")
-                Spacer()
-                Text("\(storeManager.totalTipCount)")
-                    .foregroundColor(.secondary)
-                Button("리셋") {
-                    storeManager.debugResetTipCount()
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-            }
-        } header: {
-            Label("프리미엄 설정", systemImage: "crown")
-        } footer: {
-            Text("실제 결제 없이 프리미엄 상태를 테스트할 수 있습니다.")
-        }
-    }
-    
+
     // MARK: - Data Status Section
     
     private var dataStatusSection: some View {
@@ -247,9 +181,6 @@ struct DeveloperSettingsView: View {
         let domain = Bundle.main.bundleIdentifier!
         UserDefaults.standard.removePersistentDomain(forName: domain)
         UserDefaults.standard.synchronize()
-        
-        // 프리미엄 상태도 리셋
-        storeManager.debugSetPremium(false)
         
         print("🔧 [DEBUG] UserDefaults 초기화됨")
     }

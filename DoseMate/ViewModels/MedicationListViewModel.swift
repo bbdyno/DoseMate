@@ -168,29 +168,12 @@ final class MedicationListViewModel {
     }
     
     // MARK: - CRUD Operations
-    
-    /// 약물 추가 가능 여부
-    /// 💡 프리미엄 정책: 무료 사용자는 3개까지만 추가 가능
-    var canAddMedication: Bool {
-        PremiumFeatures.canAddMedication(currentCount: medications.count)
-    }
-    
-    /// 남은 무료 슬롯 수
-    var remainingFreeSlots: Int {
-        max(0, PremiumFeatures.freeMedicationLimit - medications.count)
-    }
-    
+
     /// 약물 추가
     func addMedication(_ medication: Medication) async {
         guard let context = modelContext else {
             print("❌ ModelContext가 없습니다")
             errorMessage = "데이터베이스 연결에 실패했습니다."
-            return
-        }
-
-        // 💎 프리미엄 체크
-        guard canAddMedication else {
-            errorMessage = "무료 버전에서는 약물을 \(PremiumFeatures.freeMedicationLimit)개까지만 등록할 수 있습니다. 프리미엄으로 업그레이드하세요."
             return
         }
 
