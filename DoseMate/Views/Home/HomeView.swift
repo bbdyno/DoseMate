@@ -372,7 +372,7 @@ struct HomeView: View {
     // MARK: - Today Schedule Section
     
     private var todayScheduleSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.md) {
+        VStack(alignment: .center, spacing: AppSpacing.md) {
             SectionHeader(
                 title: DoseMateStrings.Reminders.title,
                 subtitle: "\(viewModel.completedLogsCount)/\(viewModel.totalLogsCount) \(DoseMateStrings.Status.taken)"
@@ -428,7 +428,7 @@ struct HomeView: View {
             buttonTitle: DoseMateStrings.Medications.add,
             action: { showAddMedicationSheet = true }
         )
-        .cardStyle()
+        .cardStyle(padding: AppSpacing.xxl)
     }
     
     // MARK: - Low Stock Section

@@ -254,7 +254,7 @@ struct SettingsView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
 
-                        Text("암호화폐 및 일반 후원")
+                        Text(DoseMateStrings.Settings.cryptoSupportSubtitle)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -276,7 +276,7 @@ struct SettingsView: View {
         } header: {
             Text(DoseMateStrings.Settings.supportSection)
         } footer: {
-            Text("DoseMate는 완전 무료 앱입니다. 자발적 후원은 앱 개발에 큰 도움이 됩니다.")
+            Text(DoseMateStrings.Settings.freeAppFooter)
         }
     }
     
@@ -325,7 +325,7 @@ struct SettingsView: View {
                         if minutes == 0 {
                             Text(DoseMateStrings.Settings.onTheHour).tag(minutes)
                         } else {
-                            Text("\(minutes)분 전").tag(minutes)
+                            Text(DoseMateStrings.Schedule.beforeMinutes(minutes)).tag(minutes)
                         }
                     }
                 } label: {

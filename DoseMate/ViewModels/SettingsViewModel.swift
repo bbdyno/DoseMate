@@ -225,7 +225,7 @@ final class SettingsViewModel {
             await checkPermissions()
             successMessage = "알림 권한이 허용되었습니다."
         } catch {
-            errorMessage = "알림 권한 요청에 실패했습니다."
+            errorMessage = DoseMateStrings.Error.notificationRequestFailed
         }
     }
     
@@ -237,7 +237,7 @@ final class SettingsViewModel {
             healthKitEnabled = true
             successMessage = "건강 앱 연동이 활성화되었습니다."
         } catch {
-            errorMessage = "건강 앱 권한 요청에 실패했습니다."
+            errorMessage = DoseMateStrings.Error.healthkitRequestFailed
         }
     }
     
@@ -251,7 +251,7 @@ final class SettingsViewModel {
     /// HealthKit 동기화
     func syncHealthKit() async {
         guard healthKitEnabled && healthKitAuthorized else {
-            errorMessage = "건강 앱 연동이 활성화되지 않았습니다."
+            errorMessage = DoseMateStrings.Error.healthkitNotActivated
             return
         }
         
@@ -277,7 +277,7 @@ final class SettingsViewModel {
         )
         
         guard let schedules = try? context.fetch(descriptor) else {
-            errorMessage = "스케줄을 불러오는데 실패했습니다."
+            errorMessage = DoseMateStrings.Error.scheduleLoadFailed
             return
         }
         
@@ -285,7 +285,7 @@ final class SettingsViewModel {
             try await notificationManager.rescheduleAllNotifications(schedules: schedules)
             successMessage = "알림이 재설정되었습니다."
         } catch {
-            errorMessage = "알림 재설정에 실패했습니다."
+            errorMessage = DoseMateStrings.Error.notificationRescheduleFailed
         }
     }
     
@@ -357,7 +357,7 @@ final class SettingsViewModel {
             successMessage = "모든 데이터가 삭제되었습니다."
         } catch {
             print("[SettingsViewModel] Delete all data failed: \(error)")
-            errorMessage = "데이터 삭제에 실패했습니다: \(error.localizedDescription)"
+            errorMessage = "\(DoseMateStrings.Error.dataDeleteFailed): \(error.localizedDescription)"
         }
     }
     
@@ -412,28 +412,28 @@ final class SettingsViewModel {
     var notificationStatusText: String {
         switch notificationAuthorizationStatus {
         case .notDetermined:
-            return "권한 필요"
+            return DoseMateStrings.Settings.Status.permissionRequired
         case .denied:
-            return "거부됨"
+            return DoseMateStrings.Settings.Status.denied
         case .authorized:
-            return "허용됨"
+            return DoseMateStrings.Settings.Status.authorized
         case .provisional:
-            return "임시 허용"
+            return DoseMateStrings.Settings.Status.provisional
         case .ephemeral:
-            return "일시적 허용"
+            return DoseMateStrings.Settings.Status.ephemeral
         @unknown default:
-            return "알 수 없음"
+            return DoseMateStrings.Settings.Status.unknown
         }
     }
     
     /// HealthKit 상태 텍스트
     var healthKitStatusText: String {
         if !HealthKitManager.shared.isAvailable {
-            return "사용 불가"
+            return DoseMateStrings.Settings.Status.unavailable
         } else if healthKitAuthorized {
-            return "연동됨"
+            return DoseMateStrings.Settings.Status.connected
         } else {
-            return "연동 안됨"
+            return DoseMateStrings.Settings.Status.notConnected
         }
     }
     
