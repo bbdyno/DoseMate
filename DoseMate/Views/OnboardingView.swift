@@ -26,22 +26,22 @@ struct OnboardingView: View {
             
             // 환영 메시지
             VStack(spacing: AppSpacing.sm) {
-                Text("DoseMate에 오신 것을 환영합니다")
+                Text(DoseMateStrings.App.welcome)
                     .font(AppTypography.title2)
                     .fontWeight(.bold)
                     .foregroundColor(AppColors.textPrimary)
-                
-                Text("가장 먼저, 당신의 이름을 알려주세요.")
+
+                Text(DoseMateStrings.Onboarding.askName)
                     .font(AppTypography.body)
                     .foregroundColor(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, AppSpacing.lg)
-            
+
             Spacer()
-            
+
             // 이름 입력
-            TextField("이름을 입력하세요", text: $name)
+            TextField(DoseMateStrings.Onboarding.namePlaceholder, text: $name)
                 .font(AppTypography.title3)
                 .padding(AppSpacing.md)
                 .background(AppColors.cardBackground)
@@ -56,7 +56,7 @@ struct OnboardingView: View {
                 savePatient()
                 onboardingCompleted = true
             }) {
-                Text("시작하기")
+                Text(DoseMateStrings.Onboarding.getStarted)
                     .font(AppTypography.headline)
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)

@@ -158,11 +158,11 @@ struct Provider: TimelineProvider {
     /// 상태 표시 이름 변환
     private func getStatusDisplayName(_ status: String) -> String {
         switch status {
-        case "taken": return "완료"
-        case "pending": return "대기"
-        case "skipped": return "건너뜀"
-        case "delayed": return "지연"
-        case "snoozed": return "미루기"
+        case "taken": return DoseMateStrings.Widget.Status.completed
+        case "pending": return DoseMateStrings.Widget.Status.pending
+        case "skipped": return DoseMateStrings.Widget.Status.skipped
+        case "delayed": return DoseMateStrings.Widget.Status.delayed
+        case "snoozed": return DoseMateStrings.Widget.Status.snoozed
         default: return status
         }
     }
@@ -189,12 +189,12 @@ struct SmallWidgetView: View {
                 }
 
                 VStack(spacing: 4) {
-                    Text("복약 데이터 없음")
+                    Text(DoseMateStrings.Widget.noData)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
 
-                    Text("앱에서 약물을 추가하세요")
+                    Text(DoseMateStrings.Widget.addInApp)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -224,7 +224,7 @@ struct SmallWidgetView: View {
                             .fontWeight(.bold)
                             .foregroundColor(adherenceColor)
 
-                        Text("준수율")
+                        Text(DoseMateStrings.Widget.adherenceRate)
                             .font(.caption2)
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
@@ -241,7 +241,7 @@ struct SmallWidgetView: View {
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
 
-                            Text("다음 복약")
+                            Text(DoseMateStrings.Widget.nextDose)
                                 .font(.caption2)
                                 .fontWeight(.medium)
                                 .foregroundColor(.secondary)
@@ -269,7 +269,7 @@ struct SmallWidgetView: View {
                             .font(.body)
                             .foregroundColor(.green)
 
-                        Text("오늘 복약 완료!")
+                        Text(DoseMateStrings.Widget.allCompleteToday)
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
@@ -307,12 +307,12 @@ struct MediumWidgetView: View {
                 .padding(.leading, 8)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("복약 데이터가 없습니다")
+                    Text(DoseMateStrings.Widget.noMedicationData)
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
 
-                    Text("DoseMate 앱에서\n약물을 추가해보세요")
+                    Text(DoseMateStrings.Widget.addMedicationsInApp)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
@@ -677,8 +677,8 @@ struct PillReminderWidget: Widget {
                     )
                 }
         }
-        .configurationDisplayName("복약 관리")
-        .description("오늘의 복약 일정을 확인하세요")
+        .configurationDisplayName(DoseMateStrings.Widget.configurationDisplayName)
+        .description(DoseMateStrings.Widget.configurationDescription)
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }

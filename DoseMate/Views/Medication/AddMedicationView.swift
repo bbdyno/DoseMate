@@ -135,14 +135,14 @@ struct AddMedicationView: View {
                 // 헤더
                 pageHeaderCard(
                     icon: "pill.fill",
-                    title: "기본 정보",
-                    subtitle: "약물의 기본 정보를 입력하세요",
+                    title: DoseMateStrings.Medication.basicInfoTitle,
+                    subtitle: DoseMateStrings.Medication.basicInfoSubtitle,
                     color: AppColors.primary
                 )
                 
                 // 이미지 섹션
                 VStack(alignment: .leading, spacing: AppSpacing.md) {
-                    SectionHeader(title: "약물 사진", subtitle: "")
+                    SectionHeader(title: DoseMateStrings.Medication.photoSection, subtitle: "")
                     
                     imageSelector
                 }
@@ -150,24 +150,24 @@ struct AddMedicationView: View {
                 
                 // 기본 정보
                 VStack(alignment: .leading, spacing: AppSpacing.md) {
-                    SectionHeader(title: "필수 정보", subtitle: "")
+                    SectionHeader(title: DoseMateStrings.Medication.requiredInfo, subtitle: "")
                     
                     VStack(spacing: AppSpacing.sm) {
                         CustomTextField(
                             icon: "pill",
-                            placeholder: "약물 이름 *",
+                            placeholder: DoseMateStrings.Medication.nameRequiredPlaceholder,
                             text: $name
                         )
-                        
+
                         CustomTextField(
                             icon: "number",
-                            placeholder: "용량 (예: 1정, 5mL)",
+                            placeholder: DoseMateStrings.Medication.dosageExamplePlaceholder,
                             text: $dosage
                         )
-                        
+
                         CustomTextField(
                             icon: "chart.bar",
-                            placeholder: "강도 (예: 500mg)",
+                            placeholder: DoseMateStrings.Medication.strengthExamplePlaceholder,
                             text: $strength
                         )
                     }
@@ -176,12 +176,12 @@ struct AddMedicationView: View {
                 
                 // 형태 및 색상
                 VStack(alignment: .leading, spacing: AppSpacing.md) {
-                    SectionHeader(title: "약물 형태", subtitle: "")
+                    SectionHeader(title: DoseMateStrings.Medication.formSection, subtitle: "")
                     
                     VStack(spacing: AppSpacing.md) {
                         // 형태 선택
                         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                            Text("형태")
+                            Text(DoseMateStrings.Medication.formLabel)
                                 .font(AppTypography.caption)
                                 .foregroundColor(AppColors.textSecondary)
                             
@@ -202,7 +202,7 @@ struct AddMedicationView: View {
 
                         // 카테고리 선택
                         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                            Text("약물 카테고리")
+                            Text(DoseMateStrings.Medication.categoryLabel)
                                 .font(AppTypography.caption)
                                 .foregroundColor(AppColors.textSecondary)
 
@@ -247,7 +247,7 @@ struct AddMedicationView: View {
 
                         // 색상 선택
                         VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                            Text("색상")
+                            Text(DoseMateStrings.Medication.colorLabel)
                                 .font(AppTypography.caption)
                                 .foregroundColor(AppColors.textSecondary)
 
@@ -269,11 +269,11 @@ struct AddMedicationView: View {
                 
                 // 목적
                 VStack(alignment: .leading, spacing: AppSpacing.md) {
-                    SectionHeader(title: "복용 목적", subtitle: "")
-                    
+                    SectionHeader(title: DoseMateStrings.Medication.purposeSection, subtitle: "")
+
                     CustomTextField(
                         icon: "target",
-                        placeholder: "질환 또는 복용 목적",
+                        placeholder: DoseMateStrings.Medication.purposePlaceholder,
                         text: $purpose
                     )
                 }
@@ -292,17 +292,17 @@ struct AddMedicationView: View {
                 // 헤더
                 pageHeaderCard(
                     icon: "clock.fill",
-                    title: "복용 일정",
-                    subtitle: "약물 복용 시간과 주기를 설정하세요",
+                    title: DoseMateStrings.Medication.scheduleSectionTitle,
+                    subtitle: DoseMateStrings.Medication.scheduleSectionSubtitle,
                     color: AppColors.lavender
                 )
                 
                 // 스케줄 타입
                 VStack(alignment: .leading, spacing: AppSpacing.md) {
-                    SectionHeader(title: "복용 주기", subtitle: "")
+                    SectionHeader(title: DoseMateStrings.Medication.cycleSection, subtitle: "")
                     
                     VStack(spacing: AppSpacing.sm) {
-                        Picker("주기 타입", selection: $scheduleType) {
+                        Picker(DoseMateStrings.Medication.cycleTypeLabel, selection: $scheduleType) {
                             ForEach(ScheduleType.allCases) { type in
                                 Text(type.displayName).tag(type)
                             }

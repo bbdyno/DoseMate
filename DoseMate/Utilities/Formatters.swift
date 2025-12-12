@@ -27,67 +27,67 @@ enum Formatters {
         return formatter
     }()
     
-    /// 짧은 날짜 포맷터 (M월 d일)
+    /// 짧은 날짜 포맷터
     static let shortDate: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M월 d일"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = DoseMateStrings.DateFormat.shortDate
+        formatter.locale = Locale.current
         return formatter
     }()
-    
-    /// 전체 날짜 포맷터 (yyyy년 M월 d일)
+
+    /// 전체 날짜 포맷터
     static let fullDate: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy년 M월 d일"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = DoseMateStrings.DateFormat.fullDate
+        formatter.locale = Locale.current
         return formatter
     }()
-    
+
     /// 날짜 + 요일 포맷터
     static let dateWithWeekday: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M월 d일 (E)"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = DoseMateStrings.DateFormat.dateWithWeekday
+        formatter.locale = Locale.current
         return formatter
     }()
-    
+
     /// 날짜 + 시간 포맷터
     static let dateTime: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "M월 d일 a h:mm"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = DoseMateStrings.DateFormat.dateTime
+        formatter.locale = Locale.current
         return formatter
     }()
-    
+
     /// 전체 날짜 + 시간 포맷터
     static let fullDateTime: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy년 M월 d일 a h:mm"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = DoseMateStrings.DateFormat.fullDateTime
+        formatter.locale = Locale.current
         return formatter
     }()
-    
+
     /// 요일 포맷터
     static let weekday: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.locale = Locale.current
         return formatter
     }()
-    
+
     /// 짧은 요일 포맷터
     static let shortWeekday: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "E"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.locale = Locale.current
         return formatter
     }()
-    
+
     /// 월/년 포맷터
     static let monthYear: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy년 M월"
-        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = DoseMateStrings.DateFormat.monthYear
+        formatter.locale = Locale.current
         return formatter
     }()
     
@@ -288,8 +288,8 @@ func formatWaterIntake(_ ml: Double) -> String {
 func formatSteps(_ steps: Double) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
-    formatter.locale = Locale(identifier: "ko_KR")
-    return (formatter.string(from: NSNumber(value: Int(steps))) ?? "\(Int(steps))") + " 걸음"
+    formatter.locale = Locale.current
+    return (formatter.string(from: NSNumber(value: Int(steps))) ?? "\(Int(steps))") + " " + DoseMateStrings.TimeUnit.stepsSuffix
 }
 
 /// 수면 시간 포맷팅
@@ -297,11 +297,11 @@ func formatSleepDuration(_ hours: Double) -> String {
     let totalMinutes = Int(hours * 60)
     let h = totalMinutes / 60
     let m = totalMinutes % 60
-    
+
     if m == 0 {
-        return "\(h)시간"
+        return "\(h)" + DoseMateStrings.TimeUnit.hoursShort
     } else {
-        return "\(h)시간 \(m)분"
+        return DoseMateStrings.TimeUnit.hoursMinutesFormat(h, m)
     }
 }
 
@@ -309,13 +309,13 @@ func formatSleepDuration(_ hours: Double) -> String {
 func formatDuration(_ seconds: TimeInterval) -> String {
     let hours = Int(seconds) / 3600
     let minutes = (Int(seconds) % 3600) / 60
-    
+
     if hours > 0 {
-        return "\(hours)시간 \(minutes)분"
+        return DoseMateStrings.TimeUnit.hoursMinutesFormat(hours, minutes)
     } else if minutes > 0 {
-        return "\(minutes)분"
+        return "\(minutes)" + DoseMateStrings.TimeUnit.minutesShort
     } else {
-        return "1분 미만"
+        return DoseMateStrings.TimeUnit.lessThanMinute
     }
 }
 
@@ -324,21 +324,21 @@ func formatTimeRemaining(_ seconds: TimeInterval) -> String {
     if seconds < 0 {
         let overdue = abs(seconds)
         if overdue < 60 {
-            return "지금"
+            return DoseMateStrings.TimeUnit.now
         } else if overdue < 3600 {
-            return "\(Int(overdue / 60))분 경과"
+            return DoseMateStrings.TimeUnit.minutesPassed(Int(overdue / 60))
         } else {
-            return "\(Int(overdue / 3600))시간 경과"
+            return DoseMateStrings.TimeUnit.hoursPassed(Int(overdue / 3600))
         }
     } else {
         if seconds < 60 {
-            return "곧"
+            return DoseMateStrings.TimeUnit.shortly
         } else if seconds < 3600 {
-            return "\(Int(seconds / 60))분 후"
+            return DoseMateStrings.TimeUnit.minutesAfter(Int(seconds / 60))
         } else if seconds < 86400 {
-            return "\(Int(seconds / 3600))시간 후"
+            return DoseMateStrings.TimeUnit.hoursAfter(Int(seconds / 3600))
         } else {
-            return "\(Int(seconds / 86400))일 후"
+            return DoseMateStrings.TimeUnit.daysAfter(Int(seconds / 86400))
         }
     }
 }
@@ -346,13 +346,13 @@ func formatTimeRemaining(_ seconds: TimeInterval) -> String {
 /// 날짜 범위 포맷팅
 func formatDateRange(from startDate: Date, to endDate: Date) -> String {
     let calendar = Calendar.current
-    
+
     if calendar.isDate(startDate, inSameDayAs: endDate) {
         return Formatters.dateWithWeekday.string(from: startDate)
     } else if calendar.isDate(startDate, equalTo: endDate, toGranularity: .month) {
         let startDay = calendar.component(.day, from: startDate)
         let endFormatted = Formatters.dateWithWeekday.string(from: endDate)
-        return "\(startDay)일 ~ \(endFormatted)"
+        return DoseMateStrings.TimeUnit.dayRange(startDay) + " \(endFormatted)"
     } else {
         let startFormatted = Formatters.shortDate.string(from: startDate)
         let endFormatted = Formatters.shortDate.string(from: endDate)
