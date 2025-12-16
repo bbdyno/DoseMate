@@ -428,7 +428,7 @@ struct HomeView: View {
             buttonTitle: DoseMateStrings.Medications.add,
             action: { showAddMedicationSheet = true }
         )
-        .cardStyle(padding: AppSpacing.xxl)
+//        .cardStyle(padding: AppSpacing.xl)
     }
     
     // MARK: - Low Stock Section
@@ -955,7 +955,7 @@ struct PatientSelectionRow: View {
             Medication.self,
             MedicationSchedule.self,
             MedicationLog.self,
-            HealthMetric.self,
+//            HealthMetric.self,
             Appointment.self,
             Patient.self
         ], inMemory: true)

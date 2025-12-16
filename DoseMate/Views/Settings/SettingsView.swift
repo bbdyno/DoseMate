@@ -600,7 +600,7 @@ struct SettingsView: View {
             Medication.self,
             MedicationSchedule.self,
             MedicationLog.self,
-            HealthMetric.self,
+//            HealthMetric.self,
             Appointment.self
         ], inMemory: true)
 }

@@ -76,7 +76,7 @@ let project = Project(
                     ]
                 ]
             ),
-            sources: ["DoseMateWidget/**"],
+            sources: ["DoseMateWidget/**", "Derived/Sources/TuistStrings+DoseMate.swift"],
             resources: ["DoseMateWidget/**/*.xcassets"],
             entitlements: .file(path: "DoseMateWidget/DoseMateWidget.entitlements"),
             dependencies: [],

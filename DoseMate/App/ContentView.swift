@@ -60,7 +60,7 @@ struct ContentView: View {
             Medication.self,
             MedicationSchedule.self,
             MedicationLog.self,
-            HealthMetric.self,
+//            HealthMetric.self,
             Appointment.self,
             Patient.self
         ], inMemory: true)

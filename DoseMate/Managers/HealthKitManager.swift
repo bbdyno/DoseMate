@@ -19,7 +19,7 @@ final class HealthKitManager: ObservableObject {
     // MARK: - Properties
     
     /// HealthKit Store
-    private let healthStore = HKHealthStore()
+    let healthStore = HKHealthStore()
     
     /// HealthKit 사용 가능 여부
     @Published private(set) var isAvailable: Bool = false

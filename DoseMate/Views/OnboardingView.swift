@@ -19,12 +19,12 @@ struct OnboardingView: View {
             Spacer()
             
             // 로고 또는 아이콘
-            Image(systemName: "pills.fill")
-                .font(.system(size: 60))
-                .foregroundColor(AppColors.primary)
+            DoseMateAsset.dosemateIco.swiftUIImage
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 64, height: 64)
                 .padding(.bottom, AppSpacing.lg)
             
-            // 환영 메시지
             VStack(spacing: AppSpacing.sm) {
                 Text(DoseMateStrings.App.welcome)
                     .font(AppTypography.title2)

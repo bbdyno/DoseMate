@@ -93,55 +93,66 @@ struct HealthMetricsView: View {
     private var syncCard: some View {
         Group {
             if !healthKitManager.isAuthorized {
-                // 권한 요청 카드
-                Button {
-                    Task {
-                        await viewModel.requestHealthKitPermission()
-                    }
-                } label: {
-                    HStack(spacing: AppSpacing.md) {
-                        ZStack {
-                            Circle()
-                                .fill(LinearGradient(
+                // 권한 요청 뷰 (제로케이스 형태)
+                VStack(spacing: AppSpacing.lg) {
+                    Spacer()
+                        .frame(height: 40)
+
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        AppColors.danger.opacity(0.2),
+                                        AppColors.danger.opacity(0.15)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 100, height: 100)
+
+                        Image(systemName: "hand.raised.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(
+                                LinearGradient(
                                     colors: [
                                         AppColors.danger,
                                         AppColors.danger.opacity(0.8)
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
-                                ))
-                                .frame(width: 50, height: 50)
-                            
-                            Image(systemName: "hand.raised.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(.white)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(DoseMateStrings.Health.permissionRequired)
-                                .font(AppTypography.headline)
-                                .foregroundColor(AppColors.textPrimary)
-                            
-                            Text(DoseMateStrings.Health.permissionDescription)
-                                .font(AppTypography.caption)
-                                .foregroundColor(AppColors.textSecondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 18))
-                            .foregroundColor(AppColors.primary)
-                            .frame(width: 36, height: 36)
-                            .background(AppColors.primarySoft)
-                            .cornerRadius(AppRadius.sm)
+                                )
+                            )
                     }
-                    .padding(AppSpacing.md)
-                    .background(AppColors.cardBackground)
-                    .cornerRadius(AppRadius.lg)
-                    .shadow(color: Color.black.opacity(0.04), radius: 8, y: 2)
+
+                    VStack(spacing: AppSpacing.xs) {
+                        Text(DoseMateStrings.Health.permissionRequired)
+                            .font(AppTypography.title3)
+                            .foregroundColor(AppColors.textPrimary)
+
+                        Text(DoseMateStrings.Health.permissionDescription)
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(AppColors.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+
+                    Button {
+                        Task {
+                            await viewModel.requestHealthKitPermission()
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "hand.raised.fill")
+                            Text(DoseMateStrings.Health.permissionRequired)
+                        }
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .frame(width: 200)
+
+                    Spacer()
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
             } else {
                 // 동기화 카드
                 Button {
@@ -689,7 +700,7 @@ struct HealthMetricCardView: View {
 #Preview {
     HealthMetricsView()
         .modelContainer(for: [
-            HealthMetric.self
+//            HealthMetric.self
         ], inMemory: true)
 }
 

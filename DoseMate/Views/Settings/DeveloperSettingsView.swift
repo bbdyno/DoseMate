@@ -234,7 +234,7 @@ struct DeveloperSettingsView: View {
         MedicationSchedule.self,
         MedicationLog.self,
         Appointment.self,
-        HealthMetric.self,
+//        HealthMetric.self,
         Patient.self
     ], inMemory: true)
 }

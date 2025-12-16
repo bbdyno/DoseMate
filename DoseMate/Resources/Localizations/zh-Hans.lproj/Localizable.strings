@@ -717,3 +717,31 @@
 "error.notification_reschedule_failed" = "重新安排通知失败。";
 "error.data_delete_failed" = "删除数据失败";
 "schedule.before_minutes" = "%d分钟前";
+
+/* AI Health Briefing */
+"tab.ai" = "AI Briefing";
+"ai.permission_required" = "Health Data Permission Required";
+"ai.permission_description" = "Allow access to Health data to receive personalized activity recommendations";
+"ai.request_permission" = "Allow Access";
+"ai.no_health_data" = "No Health Data Available";
+"ai.no_health_data_description" = "Start moving today to receive AI-powered health insights";
+"ai.refresh" = "Refresh";
+"ai.today_activity" = "Today's Activity";
+"ai.steps" = "Steps";
+"ai.distance_km" = "km";
+"ai.calories" = "kcal";
+"ai.weekly_average" = "Weekly Average";
+"ai.briefing_title" = "AI Health Briefing";
+"ai.generating_briefing" = "Generating personalized briefing...";
+"ai.recommendations" = "Activity Recommendations";
+"ai.briefing.low_steps" = "Your step count is a bit low today. Let's try to be more active!";
+"ai.briefing.great_steps" = "Great job! You've reached your 10,000 step goal today!";
+"ai.briefing.good_steps" = "You're making good progress today. Keep it up!";
+"ai.briefing.below_average" = "This is below your weekly average.";
+"ai.briefing.above_average" = "This is above your weekly average!";
+"ai.recommendation.walking_title" = "Go for a Walk";
+"ai.recommendation.walking_description" = "A 30-minute walk can help you reach your daily step goal";
+"ai.recommendation.running_title" = "Try Running";
+"ai.recommendation.running_description" = "A short run can boost your active energy and mood";
+"ai.recommendation.exercise_title" = "Stay Active";
+"ai.recommendation.exercise_description" = "Consider light exercise or stretching to maintain your health";

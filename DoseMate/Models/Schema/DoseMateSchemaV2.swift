@@ -20,7 +20,7 @@ enum DoseMateSchemaV2: VersionedSchema {
             Medication.self,
             MedicationSchedule.self,
             MedicationLog.self,
-            HealthMetric.self,
+//            HealthMetric.self,
             Appointment.self,
             Patient.self
             // 향후 새 모델 추가

@@ -492,7 +492,7 @@ final class DataExportManager {
         try context.delete(model: MedicationLog.self)
         try context.delete(model: MedicationSchedule.self)
         try context.delete(model: Medication.self)
-        try context.delete(model: HealthMetric.self)
+//        try context.delete(model: HealthMetric.self)
         try context.delete(model: Appointment.self)
         try context.delete(model: Patient.self)
         
