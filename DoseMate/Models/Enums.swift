@@ -201,38 +201,9 @@ enum MetricType: String, Codable, CaseIterable, Identifiable {
         case .sleep: return .indigo
         }
     }
-    
-    /// HealthKit 동기화 지원 여부
-    var supportsHealthKit: Bool {
-        switch self {
-        case .mood: return false
-        default: return true
-        }
-    }
 }
 
-// MARK: - 데이터 소스
-/// 건강 데이터의 출처를 정의합니다.
-enum DataSource: String, Codable, CaseIterable, Identifiable {
-    case manual = "manual"       // 수동 입력
-    case healthKit = "healthKit" // HealthKit
-    
-    var id: String { rawValue }
-    
-    var displayName: String {
-        switch self {
-        case .manual: return DMateResourceStrings.DataSource.manual
-        case .healthKit: return DMateResourceStrings.DataSource.healthApp
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .manual: return "hand.point.up.left"
-        case .healthKit: return "heart.fill"
-        }
-    }
-}
+
 
 // MARK: - 알림 설정
 /// 보호자 알림 설정을 정의합니다.

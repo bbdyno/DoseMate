@@ -207,7 +207,6 @@ struct MedicationLogDTO: Codable, Identifiable {
     let notes: String?
     let snoozeCount: Int
     let lastSnoozeTime: Date?
-    let syncedToHealthKit: Bool
     let createdAt: Date
     let medicationId: UUID
     
@@ -219,7 +218,6 @@ struct MedicationLogDTO: Codable, Identifiable {
         self.notes = log.notes
         self.snoozeCount = log.snoozeCount
         self.lastSnoozeTime = log.lastSnoozeTime
-        self.syncedToHealthKit = log.syncedToHealthKit
         self.createdAt = log.createdAt
         self.medicationId = log.medication?.id ?? UUID()
     }
@@ -231,8 +229,7 @@ struct MedicationLogDTO: Codable, Identifiable {
             status: LogStatus(rawValue: status) ?? .pending,
             notes: notes,
             snoozeCount: snoozeCount,
-            lastSnoozeTime: lastSnoozeTime,
-            syncedToHealthKit: syncedToHealthKit
+            lastSnoozeTime: lastSnoozeTime
         )
         return log
     }
@@ -248,7 +245,6 @@ struct HealthMetricDTO: Codable, Identifiable {
     let unit: String
     let recordedAt: Date
     let notes: String?
-    let source: String
     
     init(from metric: HealthMetric) {
         self.id = metric.id
@@ -259,7 +255,6 @@ struct HealthMetricDTO: Codable, Identifiable {
         self.unit = metric.unit
         self.recordedAt = metric.recordedAt
         self.notes = metric.notes
-        self.source = metric.source
     }
     
     func toModel() -> HealthMetric {
@@ -270,8 +265,7 @@ struct HealthMetricDTO: Codable, Identifiable {
             diastolicValue: diastolicValue,
             unit: unit,
             recordedAt: recordedAt,
-            notes: notes,
-            source: DataSource(rawValue: source) ?? .manual
+            notes: notes
         )
         return metric
     }

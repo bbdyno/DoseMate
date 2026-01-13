@@ -57,9 +57,6 @@ final class MedicationLog {
     /// 마지막 스누즈 시간
     var lastSnoozeTime: Date?
     
-    /// HealthKit에 동기화 여부
-    var syncedToHealthKit: Bool = false
-    
     // MARK: - 계산 속성
     
     /// 복용 상태 열거형
@@ -147,8 +144,7 @@ final class MedicationLog {
         status: LogStatus = .pending,
         notes: String? = nil,
         snoozeCount: Int = 0,
-        lastSnoozeTime: Date? = nil,
-        syncedToHealthKit: Bool = false
+        lastSnoozeTime: Date? = nil
     ) {
         self.id = UUID()
         self.scheduledTime = scheduledTime
@@ -158,7 +154,6 @@ final class MedicationLog {
         self.createdAt = Date()
         self.snoozeCount = snoozeCount
         self.lastSnoozeTime = lastSnoozeTime
-        self.syncedToHealthKit = syncedToHealthKit
     }
     
     // MARK: - 메서드
@@ -200,11 +195,6 @@ final class MedicationLog {
     func resetToPending() {
         logStatus = .pending
         actualTime = nil
-    }
-    
-    /// HealthKit 동기화 완료 표시
-    func markSyncedToHealthKit() {
-        syncedToHealthKit = true
     }
 }
 

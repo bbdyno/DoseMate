@@ -62,28 +62,6 @@ final class SettingsViewModel {
         }
     }
     
-    // MARK: - HealthKit Settings
-    
-    /// HealthKit 연동 활성화
-    var healthKitEnabled: Bool = false {
-        didSet {
-            UserDefaults.standard.set(healthKitEnabled, forKey: AppConstants.UserDefaultsKeys.healthKitEnabled)
-        }
-    }
-    
-    /// HealthKit 권한 상태
-    var healthKitAuthorized: Bool = false
-    
-    /// 마지막 동기화 시간
-    var lastSyncDate: Date? {
-        get {
-            UserDefaults.standard.object(forKey: AppConstants.UserDefaultsKeys.lastSyncDate) as? Date
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: AppConstants.UserDefaultsKeys.lastSyncDate)
-        }
-    }
-    
     // MARK: - Appearance Settings
     
     /// 외관 모드
@@ -168,7 +146,6 @@ final class SettingsViewModel {
     
     private var modelContext: ModelContext?
     private let notificationManager = NotificationManager.shared
-    private let healthKitManager = HealthKitManager.shared
     
     // MARK: - Initialization
     
@@ -201,7 +178,6 @@ final class SettingsViewModel {
         
         reminderMinutesBefore = defaults.integer(forKey: AppConstants.UserDefaultsKeys.reminderMinutesBefore)
         
-        healthKitEnabled = defaults.bool(forKey: AppConstants.UserDefaultsKeys.healthKitEnabled)
         iCloudSyncEnabled = defaults.bool(forKey: AppConstants.UserDefaultsKeys.iCloudSyncEnabled)
         
         if let themeString = defaults.string(forKey: AppConstants.UserDefaultsKeys.appearanceMode),
@@ -216,8 +192,6 @@ final class SettingsViewModel {
     func checkPermissions() async {
         await notificationManager.checkAuthorizationStatus()
         notificationAuthorizationStatus = notificationManager.authorizationStatus
-        
-        healthKitAuthorized = healthKitManager.isAuthorized
     }
     
     /// 알림 권한 요청
@@ -231,38 +205,9 @@ final class SettingsViewModel {
         }
     }
     
-    /// HealthKit 권한 요청
-    func requestHealthKitPermission() async {
-        do {
-            try await healthKitManager.requestAuthorization()
-            healthKitAuthorized = true
-            healthKitEnabled = true
-            successMessage = DMateResourceStrings.Settings.Success.healthkitActivated
-        } catch {
-            errorMessage = DMateResourceStrings.Error.healthkitRequestFailed
-        }
-    }
-    
     /// 설정 앱 열기
     func openSettings() {
         notificationManager.openSettings()
-    }
-    
-    // MARK: - HealthKit Actions
-    
-    /// HealthKit 동기화
-    func syncHealthKit() async {
-        guard healthKitEnabled && healthKitAuthorized else {
-            errorMessage = DMateResourceStrings.Error.healthkitNotActivated
-            return
-        }
-        
-        isSyncing = true
-        defer { isSyncing = false }
-        
-        await healthKitManager.syncHealthData()
-        lastSyncDate = Date()
-        successMessage = DMateResourceStrings.Settings.Success.healthDataSynced
     }
     
     // MARK: - Notification Actions
@@ -426,25 +371,6 @@ final class SettingsViewModel {
         @unknown default:
             return DMateResourceStrings.Settings.Status.unknown
         }
-    }
-    
-    /// HealthKit 상태 텍스트
-    var healthKitStatusText: String {
-        if !HealthKitManager.shared.isAvailable {
-            return DMateResourceStrings.Settings.Status.unavailable
-        } else if healthKitAuthorized {
-            return DMateResourceStrings.Settings.Status.connected
-        } else {
-            return DMateResourceStrings.Settings.Status.notConnected
-        }
-    }
-    
-    /// 마지막 동기화 텍스트
-    var lastSyncText: String {
-        if let date = lastSyncDate {
-            return formatRelativeTime(date)
-        }
-        return DMateResourceStrings.Settings.notSynced
     }
     
     /// 스누즈 옵션들

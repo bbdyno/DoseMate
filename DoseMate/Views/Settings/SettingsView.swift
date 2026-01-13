@@ -42,7 +42,6 @@ struct SettingsView: View {
             List {
                 supportSection
                 notificationSection
-//                healthKitSection
                 appearanceSection
                 dataSection
                 backupSection
@@ -368,63 +367,6 @@ struct SettingsView: View {
             }
         } header: {
             Text(DMateResourceStrings.Settings.notifications)
-        }
-    }
-    
-    // MARK: - HealthKit Section
-    
-    private var healthKitSection: some View {
-        Section {
-            HStack {
-                Label(DMateResourceStrings.Settings.healthkitIntegration, systemImage: "heart.fill")
-                    .foregroundColor(AppColors.danger)
-                Spacer()
-                Text(viewModel.healthKitStatusText)
-                    .foregroundColor(.secondary)
-            }
-
-            if !HealthKitManager.shared.isAvailable {
-                Text(DMateResourceStrings.Settings.healthkitUnavailable)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            } else if !viewModel.healthKitAuthorized {
-                Button {
-                    Task {
-                        await viewModel.requestHealthKitPermission()
-                    }
-                } label: {
-                    Label(DMateResourceStrings.Settings.requestPermission, systemImage: "hand.raised")
-                }
-            } else {
-                Toggle(isOn: $viewModel.healthKitEnabled) {
-                    Label(DMateResourceStrings.Settings.autoSync, systemImage: "arrow.triangle.2.circlepath")
-                }
-
-                // 마지막 동기화
-                HStack {
-                    Text(DMateResourceStrings.Settings.lastSyncLabel)
-                    Spacer()
-                    Text(viewModel.lastSyncText)
-                        .foregroundColor(.secondary)
-                }
-
-                Button {
-                    Task {
-                        await viewModel.syncHealthKit()
-                    }
-                } label: {
-                    HStack {
-                        Label(DMateResourceStrings.Settings.syncNow, systemImage: "arrow.clockwise")
-                        Spacer()
-                        if viewModel.isSyncing {
-                            ProgressView()
-                        }
-                    }
-                }
-                .disabled(viewModel.isSyncing)
-            }
-        } header: {
-            Text(DMateResourceStrings.Settings.healthkit)
         }
     }
     

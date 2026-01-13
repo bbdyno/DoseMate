@@ -532,14 +532,12 @@ final class HomeViewModel {
         if type == .bloodPressure, let sys = systolic, let dia = diastolic {
             metric = HealthMetric(
                 bloodPressure: sys,
-                diastolic: dia,
-                source: .manual
+                diastolic: dia
             )
         } else {
             metric = HealthMetric(
                 type: type,
-                value: value,
-                source: .manual
+                value: value
             )
         }
 

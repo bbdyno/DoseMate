@@ -17,61 +17,10 @@ struct MainTabView: View {
 
     @State private var selectedTab: Tab = .home
 
-    /// AI 브리핑 탭 사용 가능 여부 (iPhone 15 Pro+ & iOS 18.2+)
-    private var isAIBriefingAvailable: Bool {
-        // iOS 버전 체크 (18.2 이상)
-        guard #available(iOS 18.2, *) else {
-            return false
-        }
-
-        // 디바이스 모델 체크 (iPhone 15 Pro 이상)
-        return isDeviceSupportedForAI()
-    }
-
-    /// AI 브리핑을 지원하는 디바이스인지 확인
-    private func isDeviceSupportedForAI() -> Bool {
-        var systemInfo = utsname()
-        uname(&systemInfo)
-        let modelCode = withUnsafePointer(to: &systemInfo.machine) {
-            $0.withMemoryRebound(to: CChar.self, capacity: 1) {
-                String(validatingUTF8: $0)
-            }
-        }
-
-        guard let model = modelCode else { return false }
-
-        // iPhone 15 Pro: iPhone16,1 (Pro), iPhone16,2 (Pro Max)
-        // iPhone 16 Pro: iPhone17,1 (Pro), iPhone17,2 (Pro Max)
-        // 시뮬레이터: 개발 목적으로 허용
-        let supportedModels = [
-            "iPhone16,1", "iPhone16,2",  // iPhone 15 Pro/Pro Max
-            "iPhone17,1", "iPhone17,2",  // iPhone 16 Pro/Pro Max
-            "arm64", "x86_64"            // Simulator
-        ]
-
-        // 정확한 모델 매칭 또는 시뮬레이터
-        if supportedModels.contains(model) {
-            return true
-        }
-
-        // iPhone16,1 이상의 모델 번호 체크 (미래 기기 대응)
-        if model.hasPrefix("iPhone") {
-            let components = model.components(separatedBy: ",")
-            if let firstComponent = components.first,
-               let modelNumber = Int(firstComponent.replacingOccurrences(of: "iPhone", with: "")),
-               modelNumber >= 16 {
-                return true
-            }
-        }
-
-        return false
-    }
-    
     enum Tab: CaseIterable {
         case home
         case medications
         case history
-        case ai
         case settings
 
         var title: String {
@@ -81,8 +30,6 @@ struct MainTabView: View {
             case .settings: return DMateResourceStrings.Tab.settings
             case .history: return
                 DMateResourceStrings.Tab.history
-            case .ai: return
-                DMateResourceStrings.Tab.ai
             }
         }
         var icon: String {
@@ -90,7 +37,6 @@ struct MainTabView: View {
             case .home: return "house.fill"
             case .medications: return "pill.fill"
             case .history: return "list.clipboard"
-            case .ai: return "brain.head.profile"
             case .settings: return "gearshape.fill"
             }
         }
@@ -123,17 +69,6 @@ struct MainTabView: View {
                 Label(Tab.history.title, systemImage: Tab.history.icon)
             }
             .tag(Tab.history)
-
-            // AI 브리핑 탭 (iPhone 15 Pro+ & iOS 18.2+ 에서만 표시)
-//            if isAIBriefingAvailable {
-//                NavigationStack {
-//                    AIHealthBriefingView()
-//                }
-//                .tabItem {
-//                    Label(Tab.ai.title, systemImage: Tab.ai.icon)
-//                }
-//                .tag(Tab.ai)
-//            }
 
             NavigationStack {
                 SettingsView()

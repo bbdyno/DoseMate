@@ -43,12 +43,6 @@ final class HealthMetric {
     /// 메모
     var notes: String?
     
-    /// 데이터 소스 (수동입력, HealthKit)
-    var source: String = ""
-    
-    /// HealthKit 샘플 UUID (중복 방지용)
-    var healthKitUUID: String?
-
     // MARK: - 관계
 
     /// 연관된 약물 (이 지표가 특정 약물과 관련있는 경우)
@@ -60,12 +54,6 @@ final class HealthMetric {
     var metricType: MetricType {
         get { MetricType(rawValue: type) ?? .weight }
         set { type = newValue.rawValue }
-    }
-    
-    /// 데이터 소스 열거형
-    var dataSource: DataSource {
-        get { DataSource(rawValue: source) ?? .manual }
-        set { source = newValue.rawValue }
     }
     
     /// 표시용 값 텍스트
@@ -135,9 +123,7 @@ final class HealthMetric {
         diastolicValue: Double? = nil,
         unit: String? = nil,
         recordedAt: Date = Date(),
-        notes: String? = nil,
-        source: DataSource = .manual,
-        healthKitUUID: String? = nil
+        notes: String? = nil
     ) {
         self.id = UUID()
         self.type = type.rawValue
@@ -147,8 +133,6 @@ final class HealthMetric {
         self.unit = unit ?? type.unit
         self.recordedAt = recordedAt
         self.notes = notes
-        self.source = source.rawValue
-        self.healthKitUUID = healthKitUUID
     }
     
     /// 혈압 초기화
@@ -156,8 +140,7 @@ final class HealthMetric {
         bloodPressure systolic: Double,
         diastolic: Double,
         recordedAt: Date = Date(),
-        notes: String? = nil,
-        source: DataSource = .manual
+        notes: String? = nil
     ) {
         self.init(
             type: .bloodPressure,
@@ -165,8 +148,7 @@ final class HealthMetric {
             systolicValue: systolic,
             diastolicValue: diastolic,
             recordedAt: recordedAt,
-            notes: notes,
-            source: source
+            notes: notes
         )
     }
     
@@ -180,8 +162,7 @@ final class HealthMetric {
             type: .mood,
             value: Double(mood.rawValue),
             recordedAt: recordedAt,
-            notes: notes,
-            source: .manual
+            notes: notes
         )
     }
 }
@@ -331,16 +312,14 @@ extension HealthMetric {
         samples.append(HealthMetric(
             type: .steps,
             value: Double(Int.random(in: 5000...12000)),
-            recordedAt: Date(),
-            source: .healthKit
+            recordedAt: Date()
         ))
         
         // 오늘의 심박수
         samples.append(HealthMetric(
             type: .heartRate,
             value: Double(Int.random(in: 60...80)),
-            recordedAt: Date(),
-            source: .healthKit
+            recordedAt: Date()
         ))
         
         return samples

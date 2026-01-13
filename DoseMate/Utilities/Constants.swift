@@ -37,8 +37,6 @@ enum AppConstants {
         static let soundEnabled = "soundEnabled"
         static let hapticEnabled = "hapticEnabled"
         static let defaultSnoozeInterval = "defaultSnoozeInterval"
-        static let healthKitEnabled = "healthKitEnabled"
-        static let lastSyncDate = "lastSyncDate"
         static let appearanceMode = "appearanceMode"
         static let selectedLanguage = "selectedLanguage"
         static let iCloudSyncEnabled = "iCloudSyncEnabled"
@@ -214,9 +212,6 @@ enum ColorTheme {
 enum FeatureFlags {
     /// 위젯 지원
     static let widgetsEnabled = true
-    
-    /// HealthKit 연동
-    static let healthKitEnabled = true
     
     /// iCloud 동기화
     static let iCloudSyncEnabled = true

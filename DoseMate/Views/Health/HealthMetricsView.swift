@@ -17,40 +17,24 @@ struct HealthMetricsView: View {
     
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = HealthMetricsViewModel()
-    @StateObject private var healthKitManager = HealthKitManager.shared
     
     // MARK: - Body
     
     var body: some View {
         NavigationStack {
-            Group {
-                if healthKitManager.isAuthorized {
-                    ScrollView {
-                        VStack(spacing: AppSpacing.lg) {
-                            // HealthKit 동기화 카드
-                            syncCard
-                            
-                            // 지표 그리드
-                            metricsGrid
-                            
-                            // 선택된 지표 상세
-                            if let selectedType = viewModel.selectedMetricType {
-                                metricDetailCard(for: selectedType)
-                            }
-                        }
-                        .padding(.top, AppSpacing.sm)
-                        .padding(.horizontal, AppSpacing.md)
-                        .padding(.bottom, AppSpacing.xxl)
-                    }
-                } else {
-                    VStack {
-                        Spacer()
-                        // HealthKit 동기화 카드 (권한 요청)
-                        syncCard
-                            .padding(.horizontal, AppSpacing.md)
-                        Spacer()
+            ScrollView {
+                VStack(spacing: AppSpacing.lg) {
+                    // 지표 그리드
+                    metricsGrid
+                    
+                    // 선택된 지표 상세
+                    if let selectedType = viewModel.selectedMetricType {
+                        metricDetailCard(for: selectedType)
                     }
                 }
+                .padding(.top, AppSpacing.sm)
+                .padding(.horizontal, AppSpacing.md)
+                .padding(.bottom, AppSpacing.xxl)
             }
             .background(AppColors.background)
             .navigationBarTitleDisplayMode(.inline)
@@ -71,10 +55,6 @@ struct HealthMetricsView: View {
         .toolbarBackground(.clear, for: .navigationBar)
         .onAppear {
             viewModel.setup(with: modelContext)
-            Task {
-                await viewModel.requestHealthKitPermission()
-                await viewModel.syncAuthorized()
-            }
         }
         .sheet(isPresented: $viewModel.showInputSheet) {
             metricInputSheet
@@ -86,137 +66,6 @@ struct HealthMetricsView: View {
         } message: {
             if let error = viewModel.errorMessage {
                 Text(error)
-            }
-        }
-    }
-    
-    // MARK: - Sync Card
-    
-    private var syncCard: some View {
-        Group {
-            if !healthKitManager.isAuthorized {
-                // 권한 요청 뷰 (제로케이스 형태)
-                VStack(spacing: AppSpacing.lg) {
-                    Spacer()
-                        .frame(height: 40)
-
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        AppColors.danger.opacity(0.2),
-                                        AppColors.danger.opacity(0.15)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 100, height: 100)
-
-                        Image(systemName: "hand.raised.fill")
-                            .font(.system(size: 40))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        AppColors.danger,
-                                        AppColors.danger.opacity(0.8)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-
-                    VStack(spacing: AppSpacing.xs) {
-                        Text(DMateResourceStrings.Health.permissionRequired)
-                            .font(AppTypography.title3)
-                            .foregroundColor(AppColors.textPrimary)
-
-                        Text(DMateResourceStrings.Health.permissionDescription)
-                            .font(AppTypography.subheadline)
-                            .foregroundColor(AppColors.textSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-
-                    Button {
-                        Task {
-                            await viewModel.requestHealthKitPermission()
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: "hand.raised.fill")
-                            Text(DMateResourceStrings.Health.permissionRequired)
-                        }
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
-                    .frame(width: 200)
-
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-            } else {
-                // 동기화 카드
-                Button {
-                    Task {
-                        await viewModel.syncAuthorized()
-                    }
-                } label: {
-                    HStack(spacing: AppSpacing.md) {
-                        ZStack {
-                            Circle()
-                                .fill(LinearGradient(
-                                    colors: [
-                                        AppColors.danger,
-                                        AppColors.danger.opacity(0.8)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ))
-                                .frame(width: 50, height: 50)
-                            
-                            Image(systemName: "heart.text.square.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(.white)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(DMateResourceStrings.Health.syncFromHealth)
-                                .font(AppTypography.headline)
-                                .foregroundColor(AppColors.textPrimary)
-                            
-                            if let lastSync = healthKitManager.lastSyncDate {
-                                Text(DMateResourceStrings.Health.lastSync(lastSync.relativeTimeString))
-                                    .font(AppTypography.caption)
-                                    .foregroundColor(AppColors.textSecondary)
-                            } else {
-                                Text(DMateResourceStrings.Health.syncDescription)
-                                    .font(AppTypography.caption)
-                                    .foregroundColor(AppColors.textSecondary)
-                            }
-                        }
-                        
-                        Spacer()
-                        
-                        if viewModel.isSyncing {
-                            ProgressView()
-                                .tint(AppColors.primary)
-                        } else {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 18))
-                                .foregroundColor(AppColors.primary)
-                                .frame(width: 36, height: 36)
-                                .background(AppColors.primarySoft)
-                                .cornerRadius(AppRadius.sm)
-                        }
-                    }
-                    .padding(AppSpacing.md)
-                    .background(AppColors.cardBackground)
-                    .cornerRadius(AppRadius.lg)
-                    .shadow(color: Color.black.opacity(0.04), radius: 8, y: 2)
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isSyncing)
             }
         }
     }

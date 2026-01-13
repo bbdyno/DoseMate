@@ -48,9 +48,6 @@ final class HealthMetricsViewModel {
     /// 로딩 상태
     var isLoading: Bool = false
     
-    /// HealthKit 동기화 중
-    var isSyncing: Bool = false
-    
     /// 에러 메시지
     var errorMessage: String?
     
@@ -84,7 +81,6 @@ final class HealthMetricsViewModel {
     // MARK: - Private Properties
     
     private var modelContext: ModelContext?
-    private let healthKitManager = HealthKitManager.shared
     
     // MARK: - Initialization
     
@@ -183,138 +179,6 @@ final class HealthMetricsViewModel {
         }
     }
     
-    // MARK: - HealthKit Sync
-    
-    /// HealthKit에서 데이터 동기화
-    func syncFromHealthKit() async {
-        isSyncing = true
-        defer { isSyncing = false }
-        
-        // 권한 요청
-        do {
-            try await healthKitManager.requestAuthorization()
-        } catch {
-            errorMessage = "건강 앱 권한을 얻는데 실패했습니다."
-            return
-        }
-        
-        // 각 지표별 동기화
-        await syncWeight()
-        await syncBloodPressure()
-        await syncBloodGlucose()
-        await syncHeartRate()
-        await syncOxygenSaturation()
-        await syncBodyTemperature()
-        await syncWaterIntake()
-        await syncSteps()
-        await syncSleep()
-        
-        await loadAllLatestMetrics()
-    }
-    
-    /// HealthKit 권한 요청만 수행
-    func requestHealthKitPermission() async {
-        do {
-            try await healthKitManager.requestAuthorization()
-        } catch {
-            errorMessage = "건강 앱 권한을 얻는데 실패했습니다."
-        }
-    }
-
-    /// 권한이 있는 상태에서 동기화만 수행
-    func syncAuthorized() async {
-        isSyncing = true
-        defer { isSyncing = false }
-        await healthKitManager.syncHealthData()
-        await loadAllLatestMetrics()
-    }
-    
-    private func syncWeight() async {
-        if let value = await healthKitManager.fetchLatestWeight() {
-            await saveMetricIfNewer(type: .weight, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncBloodPressure() async {
-        if let bp = await healthKitManager.fetchLatestBloodPressure() {
-            await saveBloodPressureIfNewer(systolic: bp.systolic, diastolic: bp.diastolic, source: .healthKit)
-        }
-    }
-    
-    private func syncBloodGlucose() async {
-        if let value = await healthKitManager.fetchLatestBloodGlucose() {
-            await saveMetricIfNewer(type: .bloodGlucose, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncHeartRate() async {
-        if let value = await healthKitManager.fetchLatestHeartRate() {
-            await saveMetricIfNewer(type: .heartRate, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncOxygenSaturation() async {
-        if let value = await healthKitManager.fetchLatestOxygenSaturation() {
-            await saveMetricIfNewer(type: .oxygenSaturation, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncBodyTemperature() async {
-        if let value = await healthKitManager.fetchLatestBodyTemperature() {
-            await saveMetricIfNewer(type: .bodyTemperature, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncWaterIntake() async {
-        if let value = await healthKitManager.fetchWaterIntake(for: Date()) {
-            await saveMetricIfNewer(type: .waterIntake, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncSteps() async {
-        if let value = await healthKitManager.fetchSteps(for: Date()) {
-            await saveMetricIfNewer(type: .steps, value: value, source: .healthKit)
-        }
-    }
-    
-    private func syncSleep() async {
-        if let value = await healthKitManager.fetchSleepData(for: Date()) {
-            await saveMetricIfNewer(type: .sleep, value: value, source: .healthKit)
-        }
-    }
-    
-    private func saveMetricIfNewer(type: MetricType, value: Double, source: DataSource) async {
-        guard let context = modelContext else { return }
-        
-        // 최신 데이터와 비교
-        if let existing = latestMetrics[type] {
-            // 이미 같은 값이 있으면 스킵
-            if existing.value == value && Calendar.current.isDateInToday(existing.recordedAt) {
-                return
-            }
-        }
-        
-        let metric = HealthMetric(type: type, value: value, source: source)
-        context.insert(metric)
-        try? context.save()
-    }
-    
-    private func saveBloodPressureIfNewer(systolic: Double, diastolic: Double, source: DataSource) async {
-        guard let context = modelContext else { return }
-        
-        if let existing = latestMetrics[.bloodPressure] {
-            if existing.systolicValue == systolic &&
-               existing.diastolicValue == diastolic &&
-               Calendar.current.isDateInToday(existing.recordedAt) {
-                return
-            }
-        }
-        
-        let metric = HealthMetric(bloodPressure: systolic, diastolic: diastolic, source: source)
-        context.insert(metric)
-        try? context.save()
-    }
-    
     // MARK: - Manual Input
     
     /// 입력 시트 열기
@@ -375,8 +239,7 @@ final class HealthMetricsViewModel {
             metric = HealthMetric(
                 bloodPressure: systolic,
                 diastolic: diastolic,
-                notes: inputNotes.isEmpty ? nil : inputNotes,
-                source: .manual
+                notes: inputNotes.isEmpty ? nil : inputNotes
             )
             
         case .mood:
@@ -393,8 +256,7 @@ final class HealthMetricsViewModel {
             metric = HealthMetric(
                 type: type,
                 value: value,
-                notes: inputNotes.isEmpty ? nil : inputNotes,
-                source: .manual
+                notes: inputNotes.isEmpty ? nil : inputNotes
             )
         }
 
@@ -405,11 +267,6 @@ final class HealthMetricsViewModel {
         
         do {
             try context.save()
-            
-            // HealthKit에 저장 (지원하는 타입만)
-            if type.supportsHealthKit && type != .mood {
-                try? await healthKitManager.saveHealthMetric(metric)
-            }
             
             await loadAllLatestMetrics()
             
@@ -442,11 +299,6 @@ final class HealthMetricsViewModel {
     /// 지원하는 지표 타입들
     var supportedMetricTypes: [MetricType] {
         MetricType.allCases
-    }
-    
-    /// HealthKit 지원 지표들
-    var healthKitMetricTypes: [MetricType] {
-        MetricType.allCases.filter { $0.supportsHealthKit }
     }
     
     /// 차트 데이터

@@ -42,8 +42,6 @@ let project = Project(
                     "ITSAppUsesNonExemptEncryption": false,
                     "NSCameraUsageDescription": "약물 사진을 촬영하여 등록할 수 있습니다.",
                     "NSFaceIDUsageDescription": "Face ID를 사용하여 앱에 빠르게 접근할 수 있습니다.",
-                    "NSHealthShareUsageDescription": "건강 데이터를 읽어 복약 관리와 건강 지표 추적에 활용합니다.",
-                    "NSHealthUpdateUsageDescription": "건강 데이터에 복약 기록과 건강 지표를 저장합니다.",
                     "NSPhotoLibraryUsageDescription": "약물 사진을 갤러리에서 선택할 수 있습니다.",
                     "NSUserNotificationsUsageDescription": "복약 시간에 알림을 보내 약 복용을 잊지 않도록 도와드립니다.",
                     "UIApplicationSceneManifest": [
