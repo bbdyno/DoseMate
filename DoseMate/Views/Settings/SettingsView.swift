@@ -17,9 +17,6 @@ struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = SettingsViewModel()
-
-    // 후원 시트 표시 상태
-    @State private var showSupportSheet = false
     
     // 데이터 내보내기/가져오기
     @State private var showImportFilePicker = false
@@ -87,9 +84,6 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.black.opacity(0.3))
                 }
-            }
-            .sheet(isPresented: $showSupportSheet) {
-                SupportDeveloperView()
             }
             .sheet(isPresented: $showTermsSheet) {
                 DocumentViewer(
@@ -260,46 +254,31 @@ struct SettingsView: View {
 
     private var supportSection: some View {
         Section {
-            Button {
-                showSupportSheet = true
-            } label: {
+            Link(destination: URL(string: "https://github.com/bbdyno/DoseMate")!) {
                 HStack {
                     // 아이콘
-                    Image(systemName: "heart.circle.fill")
+                    Image(systemName: "globe")
                         .font(.title2)
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [AppColors.premiumPink, AppColors.danger],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundStyle(AppColors.primary)
                         .frame(width: 32)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(DMateResourceStrings.Settings.developerSupport)
+                        Text("Github")
                             .fontWeight(.semibold)
                             .foregroundColor(.primary)
 
-                        Text(DMateResourceStrings.Settings.cryptoSupportSubtitle)
+                        Text("https://github.com/bbdyno/DoseMate")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
 
                     Spacer()
 
-                    Image(systemName: "chevron.right")
+                    Image(systemName: "arrow.up.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            .listRowBackground(
-                LinearGradient(
-                    colors: [AppColors.premiumPink.opacity(0.1), AppColors.danger.opacity(0.05)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
         } header: {
             Text(DMateResourceStrings.Settings.supportSection)
         } footer: {
