@@ -44,7 +44,7 @@ let project = Project(
                     "CFBundleVersion": .string(buildNumber),
                     "CFBundleDevelopmentRegion": "en",
                     "CFBundleLocalizations": ["en", "ko", "id", "zh-Hans", "ja"],
-                    "CFBundleDisplayName": "복약 관리",
+                    "CFBundleDisplayName": "DoseMate",
                     "ITSAppUsesNonExemptEncryption": false,
                     "NSCameraUsageDescription": "약물 사진을 촬영하여 등록할 수 있습니다.",
                     "NSFaceIDUsageDescription": "Face ID를 사용하여 앱에 빠르게 접근할 수 있습니다.",
@@ -69,6 +69,10 @@ let project = Project(
                         "fetch",
                         "processing",
                         "remote-notification"
+                    ],
+                    "BGTaskSchedulerPermittedIdentifiers": [
+                        "com.bbdyno.app.doseMate.refresh",
+                        "com.bbdyno.app.doseMate.processing"
                     ],
                     "NSAppTransportSecurity": [
                         "NSAllowsArbitraryLoads": false
@@ -104,13 +108,14 @@ let project = Project(
                 with: [
                     "CFBundleShortVersionString": .string(appVersion),
                     "CFBundleVersion": .string(buildNumber),
+                    "CFBundleDisplayName": "DoseMate",
                     "NSExtension": [
                         "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
                     ]
                 ]
             ),
             sources: ["DoseMateWidget/**", "Derived/Sources/TuistStrings+DoseMate.swift"],
-            resources: ["DoseMateWidget/**/*.xcassets"],
+            resources: ["DoseMateWidget/**/*.{xcassets,strings}"],
             entitlements: .file(path: "DoseMateWidget/DoseMateWidget.entitlements"),
             dependencies: [
                 .module(.designSystem),
