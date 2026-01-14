@@ -1,5 +1,9 @@
 import ProjectDescription
 
+// MARK: - Version Configuration
+let appVersion = "1.0.0"
+let buildNumber = "2025.01.15.1"
+
 // MARK: - Module Names
 enum ModuleName: String {
     case designSystem = "DMateDesignSystem"
@@ -36,6 +40,8 @@ let project = Project(
             deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleShortVersionString": .string(appVersion),
+                    "CFBundleVersion": .string(buildNumber),
                     "CFBundleDevelopmentRegion": "en",
                     "CFBundleLocalizations": ["en", "ko", "id", "zh-Hans", "ja"],
                     "CFBundleDisplayName": "복약 관리",
@@ -96,6 +102,8 @@ let project = Project(
             deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
                 with: [
+                    "CFBundleShortVersionString": .string(appVersion),
+                    "CFBundleVersion": .string(buildNumber),
                     "NSExtension": [
                         "NSExtensionPointIdentifier": "com.apple.widgetkit-extension"
                     ]
